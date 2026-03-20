@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Profile</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind (for quick styling like your code) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <!-- Navbar -->
+    <div id="navbar">
+        <!-- Replace with your actual navbar -->
+        <div class="p-4 bg-white shadow">Navbar</div>
+    </div>
+
+    <main class="bg-gray-50 min-h-screen">
+
+        <!-- Cover Section -->
+        <div class="h-48 md:h-64 bg-gradient-to-r from-blue-500 to-purple-500 relative">
+            <div class="max-w-5xl mx-auto px-4 h-full relative">
+                <div class="absolute -bottom-16 left-4 md:left-8">
+                    <div class="relative">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg"
+                             class="w-32 h-32 md:w-40 md:h-40 rounded-3xl object-cover border-4 border-white shadow-2xl">
+
+                        <div class="absolute bottom-2 right-2 bg-purple-500 text-white p-2 rounded-full shadow-lg border-2 border-white">
+                            <i data-lucide="check-circle" class="h-5 w-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-5xl mx-auto px-4 pt-20 pb-12">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Info Section -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <div>
+                        <div class="flex flex-wrap items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Rahul Sharma</h1>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-600 text-xs font-bold rounded-full border border-blue-200">
+                                IRDAI Verified
+                            </span>
+                        </div>
+
+                        <p class="text-lg text-gray-600 mb-4">
+                            Health insurance expert with proven track record.
+                        </p>
+
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="px-4 py-1 bg-white border text-gray-700 text-sm rounded-full shadow-sm">Health</span>
+                            <span class="px-4 py-1 bg-white border text-gray-700 text-sm rounded-full shadow-sm">Life</span>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border text-center">
+                            <p class="text-2xl font-bold text-blue-600">8</p>
+                            <p class="text-xs text-gray-500 uppercase">Years Exp</p>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border text-center">
+                            <p class="text-2xl font-bold">145</p>
+                            <p class="text-xs text-gray-500 uppercase">Claims</p>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border text-center">
+                            <p class="text-2xl font-bold text-purple-500">98%</p>
+                            <p class="text-xs text-gray-500 uppercase">Success</p>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border text-center">
+                            <p class="text-2xl font-bold">4.8</p>
+                            <p class="text-xs text-gray-500 uppercase">Rating</p>
+                        </div>
+
+                    </div>
+
+                    <!-- About -->
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border">
+                        <h3 class="text-xl font-bold mb-4">About Me</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Professional insurance advisor with over 8 years of experience in helping families and businesses find the right coverage.
+                            Specializing in Health and Life. I provide transparent advice and dedicated claim assistance.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+
+                    <div class="bg-white p-6 rounded-3xl shadow-xl border sticky top-24">
+                        <h3 class="text-lg font-bold mb-6">Contact Agent</h3>
+
+                        <div class="space-y-3">
+                            <a href="tel:+919876543210"
+                               class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-purple-500">
+                                <i data-lucide="phone"></i> Call Now
+                            </a>
+
+                            <a href="https://wa.me/919876543210"
+                               target="_blank"
+                               class="w-full py-4 bg-white border-2 border-green-500 text-green-600 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-green-50">
+                                <i data-lucide="message-circle"></i> WhatsApp
+                            </a>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t">
+                            <div class="flex items-center gap-3 text-sm text-gray-500">
+                                <i data-lucide="clock"></i>
+                                <span>Highly Responsive (&lt; 1hr)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div id="footer">
+        <div class="p-4 bg-white shadow text-center">Footer</div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+
+</body>
+</html>

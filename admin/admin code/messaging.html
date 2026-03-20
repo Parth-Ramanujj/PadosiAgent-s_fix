@@ -1,0 +1,68 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messaging - PadosiAgent Admin</title>
+  <script src="admin_code.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin_code.css">
+</head>
+<body>
+<nav style="position:fixed;top:0;left:0;right:0;z-index:40;background:white;border-bottom:1px solid #d7e0ea;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="images/logo.png" alt="PadosiAgent logo" style="width:160px;height:68.43px;object-fit:contain;display:block;">
+  </div>
+  <span class="badge badge-primary">Admin</span>
+</nav>
+
+<div style="padding:96px 24px 40px;max-width:1200px;margin:0 auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 style="font-size:28px;font-weight:800;margin:0;">Messaging</h1>
+      <p style="color:#5f6b7a;font-size:14px;margin:4px 0 0;">Send campaign and reminder messages to selected groups of agents.</p>
+    </div>
+    <button class="btn">🔄 Refresh</button>
+  </div>
+
+  <div class="tab-strip">
+    <a class="tab-btn" href="dashboard.html">📊 Dashboard</a>
+    <a class="tab-btn" href="agents.html">👥 Agents</a>
+    <a class="tab-btn" href="distributors.html">🏢 Distributors</a>
+    <a class="tab-btn active" href="messaging.html">📨 Messaging</a>
+  </div>
+
+  <div class="card" style="padding:20px;">
+    <h2 style="font-size:18px;font-weight:700;margin:0 0 16px;">Send Messages to Agents</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <label style="font-size:14px;font-weight:500;display:block;margin-bottom:6px;">Message Type</label>
+        <select>
+          <option>🔄 Renewal Reminder</option>
+          <option>⬆️ Upgrade Message</option>
+          <option>🎁 Special Offer</option>
+          <option>🤝 Refer &amp; Earn</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:14px;font-weight:500;display:block;margin-bottom:6px;">Channel</label>
+        <select>
+          <option>📧 Email</option>
+          <option>💬 WhatsApp</option>
+          <option>📧+💬 Both</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:14px;font-weight:500;display:block;margin-bottom:6px;">Target Agents</label>
+      <select>
+        <option>Select target group</option>
+        <option>All Agents (48)</option>
+        <option>Active Agents (32)</option>
+        <option>Inactive Agents (16)</option>
+        <option>Expiring Soon</option>
+      </select>
+    </div>
+    <button class="btn btn-primary">📨 Send Renewal Reminder</button>
+  </div>
+</div>
+</body></html>

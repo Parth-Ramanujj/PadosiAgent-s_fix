@@ -1,0 +1,233 @@
+Array
+(
+    [0] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => admins
+        )
+
+    [1] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_achievement_photos
+        )
+
+    [2] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_career_timelines
+        )
+
+    [3] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_family_licenses
+        )
+
+    [4] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_insurance_segments
+        )
+
+    [5] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_lead_preferences
+        )
+
+    [6] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_performance_stats
+        )
+
+    [7] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_portfolios
+        )
+
+    [8] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_product_expertise
+        )
+
+    [9] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_profiles
+        )
+
+    [10] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_reviews
+        )
+
+    [11] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_serviceable_cities
+        )
+
+    [12] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agent_subscriptions
+        )
+
+    [13] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agents
+        )
+
+    [14] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => agents_old1
+        )
+
+    [15] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => auth_group
+        )
+
+    [16] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => auth_group_permissions
+        )
+
+    [17] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => auth_permission
+        )
+
+    [18] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => cache
+        )
+
+    [19] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => cache_locks
+        )
+
+    [20] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => cities
+        )
+
+    [21] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => clients
+        )
+
+    [22] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => contact_submissions
+        )
+
+    [23] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_agent
+        )
+
+    [24] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_agentinsurancesegment
+        )
+
+    [25] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_agentperformancestat
+        )
+
+    [26] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_agentprofile
+        )
+
+    [27] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_agentreview
+        )
+
+    [28] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_city
+        )
+
+    [29] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_client
+        )
+
+    [30] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_favoriteagent
+        )
+
+    [31] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_pincode
+        )
+
+    [32] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_user
+        )
+
+    [33] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_user_groups
+        )
+
+    [34] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => core_user_user_permissions
+        )
+
+    [35] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => django_admin_log
+        )
+
+    [36] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => django_content_type
+        )
+
+    [37] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => django_migrations
+        )
+
+    [38] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => django_session
+        )
+
+    [39] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => favorite_agents
+        )
+
+    [40] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => migrations
+        )
+
+    [41] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => participants
+        )
+
+    [42] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => password_reset_tokens
+        )
+
+    [43] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => pincodes
+        )
+
+    [44] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => sessions
+        )
+
+    [45] => stdClass Object
+        (
+            [Tables_in_padosi_db_staging] => users
+        )
+
+)

@@ -1,0 +1,209 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - PadosiAgent Admin</title>
+  <script src="admin_code.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="C:\wamp64\www\server\Admin_padosi\admin_code.css">
+</head>
+
+<body>
+  <nav
+    style="position:fixed;top:0;left:0;right:0;z-index:40;background:white;border-bottom:1px solid #d7e0ea;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <img src="images/logo.png" alt="PadosiAgent logo"
+        style="width:160px;height:68.43px;object-fit:contain;display:block;">
+    </div>
+    <span class="badge badge-primary">Admin</span>
+  </nav>
+
+  <div style="padding:96px 24px 40px;max-width:1200px;margin:0 auto;">
+    <div
+      style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:28px;font-weight:800;margin:0;">Admin Panel</h1>
+        <p style="color:#5f6b7a;font-size:14px;margin:4px 0 0;">Manage agents, distributors, and platform settings</p>
+      </div>
+      <button id="dashboardRefreshBtn" class="btn">🔄 Refresh</button>
+    </div>
+
+    <div class="tab-strip">
+      <a class="tab-btn active" href="dashboard.html">📊 Dashboard</a>
+      <a class="tab-btn" href="agents.html">👥 Agents</a>
+      <a class="tab-btn" href="distributors.html">🏢 Distributors</a>
+      <a class="tab-btn" href="messaging.html">📨 Messaging</a>
+    </div>
+
+    <div>
+      <div
+        style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+        <select id="dashboardPeriodFilter" style="width:160px;padding:6px 10px;font-size:13px;">
+          <option>Last 12 Months</option>
+          <option>Last 6 Months</option>
+          <option>Last 3 Months</option>
+        </select>
+        <button id="exportCsvBtn" class="btn">📥 Export CSV</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px;">
+        <div class="card kpi-card">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div class="kpi-icon">👥</div>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">48</div>
+            <div class="kpi-label">Total Agents</div>
+          </div>
+        </div>
+        <div class="card kpi-card">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div class="kpi-icon" style="background:rgba(22,163,74,0.1);">✅</div>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">32</div>
+            <div class="kpi-label">Active</div>
+            <div style="font-size:10px;color:#5f6b7a;">67%</div>
+          </div>
+        </div>
+        <div class="card kpi-card">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div class="kpi-icon" style="background:rgba(37,99,235,0.1);">➕</div>
+            <span class="badge badge-green" style="font-size:10px;">↑ 23%</span>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">8</div>
+            <div class="kpi-label">New This Month</div>
+          </div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon">🏢</div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">5</div>
+            <div class="kpi-label">Distributors</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px;">
+        <div class="card kpi-card">
+          <div class="kpi-icon" style="background:rgba(16,185,129,0.1);">🛡️</div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">78%</div>
+            <div class="kpi-label">Retention Rate</div>
+            <div style="font-size:10px;color:#5f6b7a;">25/32</div>
+          </div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon" style="background:rgba(99,102,241,0.1);">📈</div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">35%</div>
+            <div class="kpi-label">Upgrade Rate</div>
+            <div style="font-size:10px;color:#5f6b7a;">Starter → Professional</div>
+          </div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon" style="background:rgba(245,158,11,0.1);">👁️</div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">12,450</div>
+            <div class="kpi-label">Total Page Views</div>
+          </div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon" style="background:rgba(244,63,94,0.1);">📊</div>
+          <div style="margin-top:12px;">
+            <div class="kpi-value">342</div>
+            <div class="kpi-label">Total Leads</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:#ead7a3;background:#fffdf4;padding:20px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span>🔄</span>
+          <strong style="font-size:14px;">Renewal Dues</strong>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center;">
+          <div>
+            <div style="font-size:24px;font-weight:800;">3</div>
+            <span class="badge badge-destructive" style="margin-top:4px;">Expired</span>
+          </div>
+          <div>
+            <div style="font-size:24px;font-weight:800;">7</div>
+            <span class="badge badge-amber" style="margin-top:4px;">≤ 30 Days</span>
+          </div>
+          <div>
+            <div style="font-size:24px;font-weight:800;">5</div>
+            <span class="badge badge-secondary" style="margin-top:4px;">31-60 Days</span>
+          </div>
+          <div>
+            <div style="font-size:24px;font-weight:800;">4</div>
+            <span class="badge" style="border:1px solid #d7e0ea;margin-top:4px;">61-90 Days</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+        <div class="card" style="padding:20px;">
+          <h3 style="font-size:15px;font-weight:600;margin:0 0 16px;display:flex;align-items:center;gap:8px;">📈 MoM
+            Registration Growth</h3>
+          <div class="chart-container"><canvas id="momChart"></canvas></div>
+        </div>
+        <div class="card" style="padding:20px;">
+          <h3 style="font-size:15px;font-weight:600;margin:0 0 16px;display:flex;align-items:center;gap:8px;">🥧 Plan
+            Distribution</h3>
+          <div class="chart-container"><canvas id="pieChart"></canvas></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="card" style="padding:20px;">
+          <h3 style="font-size:15px;font-weight:600;margin:0 0 16px;display:flex;align-items:center;gap:8px;">📍 Top
+            Cities</h3>
+          <div class="chart-container"><canvas id="citiesChart"></canvas></div>
+        </div>
+        <div class="card" style="padding:20px;">
+          <h3 style="font-size:15px;font-weight:600;margin:0 0 16px;display:flex;align-items:center;gap:8px;">⚡
+            Penetration &amp; Engagement</h3>
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
+              <span>Starter Plan</span><span style="font-weight:600;">31 (65%)</span>
+            </div>
+            <div style="height:8px;background:#edf3f8;border-radius:99px;overflow:hidden;">
+              <div style="height:100%;width:65%;background:#1d7d5d;border-radius:99px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
+              <span>Professional Plan</span><span style="font-weight:600;">17 (35%)</span>
+            </div>
+            <div style="height:8px;background:#edf3f8;border-radius:99px;overflow:hidden;">
+              <div style="height:100%;width:35%;background:#2258a5;border-radius:99px;"></div>
+            </div>
+          </div>
+          <div class="separator"></div>
+          <div style="font-size:14px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+              <span style="color:#5f6b7a;">Avg Rating</span><span style="font-weight:600;">4.2 ⭐</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+              <span style="color:#5f6b7a;">Total Reviews</span><span style="font-weight:600;">156</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+              <span style="color:#5f6b7a;">Total Leads</span><span style="font-weight:600;">342</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:#5f6b7a;">Total Page Views</span><span style="font-weight:600;">12,450</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

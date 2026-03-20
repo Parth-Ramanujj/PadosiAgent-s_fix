@@ -1,0 +1,61 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distributors - PadosiAgent Admin</title>
+  <script src="admin_code.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin_code.css">
+</head>
+<body>
+<nav style="position:fixed;top:0;left:0;right:0;z-index:40;background:white;border-bottom:1px solid #d7e0ea;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="images/logo.png" alt="PadosiAgent logo" style="width:160px;height:68.43px;object-fit:contain;display:block;">
+  </div>
+  <span class="badge badge-primary">Admin</span>
+</nav>
+
+<div style="padding:96px 24px 40px;max-width:1200px;margin:0 auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 style="font-size:28px;font-weight:800;margin:0;">Distributors</h1>
+      <p style="color:#5f6b7a;font-size:14px;margin:4px 0 0;">View distributor assignments, companies, regions, and commissions.</p>
+    </div>
+    <button class="btn">🔄 Refresh</button>
+  </div>
+
+  <div class="tab-strip">
+    <a class="tab-btn" href="dashboard.html">📊 Dashboard</a>
+    <a class="tab-btn" href="agents.html">👥 Agents</a>
+    <a class="tab-btn active" href="distributors.html">🏢 Distributors</a>
+    <a class="tab-btn" href="messaging.html">📨 Messaging</a>
+  </div>
+
+  <div class="card">
+    <div style="padding:20px;border-bottom:1px solid #d7e0ea;">
+      <h2 style="font-size:18px;font-weight:700;margin:0;">All Distributors</h2>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Company</th>
+            <th>Region</th>
+            <th>Agents</th>
+            <th>Commission</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-weight:600;">Rajesh Mehta</td><td>rajesh@insuredist.com</td><td>InsureDistributors Pvt Ltd</td><td>Western India</td><td>12</td><td>15%</td></tr>
+          <tr><td style="font-weight:600;">Sunita Agarwal</td><td>sunita@policynet.in</td><td>PolicyNet Solutions</td><td>North India</td><td>18</td><td>12%</td></tr>
+          <tr><td style="font-weight:600;">Deepak Joshi</td><td>deepak@shieldcorp.com</td><td>ShieldCorp Agency</td><td>South India</td><td>8</td><td>18%</td></tr>
+          <tr><td style="font-weight:600;">Neha Kapoor</td><td>neha@trustinsure.com</td><td>TrustInsure Partners</td><td>East India</td><td>6</td><td>14%</td></tr>
+          <tr><td style="font-weight:600;">Amit Gupta</td><td>amit@coverfirst.in</td><td>CoverFirst Distribution</td><td>Central India</td><td>4</td><td>16%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body></html>

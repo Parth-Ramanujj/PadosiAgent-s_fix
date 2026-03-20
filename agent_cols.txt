@@ -1,0 +1,183 @@
+Array
+(
+    [0] => stdClass Object
+        (
+            [Field] => id
+            [Type] => bigint unsigned
+            [Null] => NO
+            [Key] => PRI
+            [Default] => 
+            [Extra] => auto_increment
+        )
+
+    [1] => stdClass Object
+        (
+            [Field] => user_id
+            [Type] => bigint unsigned
+            [Null] => YES
+            [Key] => MUL
+            [Default] => 
+            [Extra] => 
+        )
+
+    [2] => stdClass Object
+        (
+            [Field] => fullname
+            [Type] => varchar(191)
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [3] => stdClass Object
+        (
+            [Field] => email
+            [Type] => varchar(191)
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [4] => stdClass Object
+        (
+            [Field] => google_id
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => UNI
+            [Default] => 
+            [Extra] => 
+        )
+
+    [5] => stdClass Object
+        (
+            [Field] => email_verified_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [6] => stdClass Object
+        (
+            [Field] => mobile
+            [Type] => varchar(10)
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [7] => stdClass Object
+        (
+            [Field] => registration_step
+            [Type] => int
+            [Null] => NO
+            [Key] => 
+            [Default] => 1
+            [Extra] => 
+        )
+
+    [8] => stdClass Object
+        (
+            [Field] => status
+            [Type] => varchar(191)
+            [Null] => NO
+            [Key] => 
+            [Default] => incomplete
+            [Extra] => 
+        )
+
+    [9] => stdClass Object
+        (
+            [Field] => admin_notes
+            [Type] => text
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [10] => stdClass Object
+        (
+            [Field] => registration_draft
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [11] => stdClass Object
+        (
+            [Field] => user_types
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [12] => stdClass Object
+        (
+            [Field] => insurance_companies
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [13] => stdClass Object
+        (
+            [Field] => experience_range
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [14] => stdClass Object
+        (
+            [Field] => client_base
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [15] => stdClass Object
+        (
+            [Field] => profession
+            [Type] => enum('LIC Agent','CA','Lawyer','Vehicle Insurance','Health Insurance')
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [16] => stdClass Object
+        (
+            [Field] => created_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [17] => stdClass Object
+        (
+            [Field] => updated_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+)

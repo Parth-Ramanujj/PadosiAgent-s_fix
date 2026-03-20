@@ -1,0 +1,273 @@
+Array
+(
+    [0] => stdClass Object
+        (
+            [Field] => id
+            [Type] => bigint unsigned
+            [Null] => NO
+            [Key] => PRI
+            [Default] => 
+            [Extra] => auto_increment
+        )
+
+    [1] => stdClass Object
+        (
+            [Field] => agent_id
+            [Type] => bigint unsigned
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [2] => stdClass Object
+        (
+            [Field] => profile_photo_path
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [3] => stdClass Object
+        (
+            [Field] => display_name
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [4] => stdClass Object
+        (
+            [Field] => slug
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => UNI
+            [Default] => 
+            [Extra] => 
+        )
+
+    [5] => stdClass Object
+        (
+            [Field] => whatsapp
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [6] => stdClass Object
+        (
+            [Field] => languages
+            [Type] => text
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [7] => stdClass Object
+        (
+            [Field] => address
+            [Type] => text
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [8] => stdClass Object
+        (
+            [Field] => pan_number
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [9] => stdClass Object
+        (
+            [Field] => license_number
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [10] => stdClass Object
+        (
+            [Field] => software_name
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [11] => stdClass Object
+        (
+            [Field] => portfolio_breakdown
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [12] => stdClass Object
+        (
+            [Field] => desired_services
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [13] => stdClass Object
+        (
+            [Field] => agency_name
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [14] => stdClass Object
+        (
+            [Field] => office_address
+            [Type] => text
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [15] => stdClass Object
+        (
+            [Field] => service_pincodes
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [16] => stdClass Object
+        (
+            [Field] => experience_years
+            [Type] => int
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [17] => stdClass Object
+        (
+            [Field] => has_pos_license
+            [Type] => tinyint(1)
+            [Null] => NO
+            [Key] => 
+            [Default] => 0
+            [Extra] => 
+        )
+
+    [18] => stdClass Object
+        (
+            [Field] => website_url
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [19] => stdClass Object
+        (
+            [Field] => social_links
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [20] => stdClass Object
+        (
+            [Field] => career_highlights
+            [Type] => text
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [21] => stdClass Object
+        (
+            [Field] => created_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [22] => stdClass Object
+        (
+            [Field] => updated_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [23] => stdClass Object
+        (
+            [Field] => is_profile_visible
+            [Type] => tinyint(1)
+            [Null] => NO
+            [Key] => 
+            [Default] => 1
+            [Extra] => 
+        )
+
+    [24] => stdClass Object
+        (
+            [Field] => show_certificates
+            [Type] => tinyint(1)
+            [Null] => NO
+            [Key] => 
+            [Default] => 1
+            [Extra] => 
+        )
+
+    [25] => stdClass Object
+        (
+            [Field] => show_achievements
+            [Type] => tinyint(1)
+            [Null] => NO
+            [Key] => 
+            [Default] => 1
+            [Extra] => 
+        )
+
+    [26] => stdClass Object
+        (
+            [Field] => show_reviews
+            [Type] => tinyint(1)
+            [Null] => NO
+            [Key] => 
+            [Default] => 1
+            [Extra] => 
+        )
+
+)

@@ -1,0 +1,8 @@
+Illuminate\Support\Collection Object
+(
+    [items:protected] => Array
+        (
+        )
+
+    [escapeWhenCastingToString:protected] => 
+)

@@ -1,0 +1,174 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agents - PadosiAgent Admin</title>
+  <script src="admin_code.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin_code.css">
+</head>
+<body>
+<nav style="position:fixed;top:0;left:0;right:0;z-index:40;background:white;border-bottom:1px solid #d7e0ea;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="images/logo.png" alt="PadosiAgent logo" style="width:160px;height:68.43px;object-fit:contain;display:block;">
+  </div>
+  <span class="badge badge-primary">Admin</span>
+</nav>
+
+<div style="padding:96px 24px 40px;max-width:1200px;margin:0 auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 style="font-size:28px;font-weight:800;margin:0;">Agents</h1>
+      <p style="color:#5f6b7a;font-size:14px;margin:4px 0 0;">Manage plans, status, and visibility for registered agents.</p>
+    </div>
+    <button class="btn">🔄 Refresh</button>
+  </div>
+
+  <div class="tab-strip">
+    <a class="tab-btn" href="dashboard.html">📊 Dashboard</a>
+    <a class="tab-btn active" href="agents.html">👥 Agents</a>
+    <a class="tab-btn" href="distributors.html">🏢 Distributors</a>
+    <a class="tab-btn" href="messaging.html">📨 Messaging</a>
+  </div>
+
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <input id="agents-search-input" type="text" placeholder="🔍 Search by name, email, location, license..." style="flex:1;min-width:200px;">
+      <select id="agents-plan-filter" style="width:150px;">
+        <option>All Plans</option>
+        <option>Starter</option>
+        <option>Professional</option>
+      </select>
+      <select id="agents-status-filter" style="width:140px;">
+        <option>All Status</option>
+        <option>Active</option>
+        <option>Inactive</option>
+      </select>
+      <input id="agents-city-filter" type="text" placeholder="Filter by city..." style="width:160px;">
+      <button id="agents-search-button" class="btn btn-primary" style="min-width:110px;">🔎 Search</button>
+    </div>
+  </div>
+
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px;"><input type="checkbox"></th>
+          <th style="cursor:pointer;">Agent ↕</th>
+          <th>Location</th>
+          <th style="cursor:pointer;">Plan ↕</th>
+          <th style="cursor:pointer;">Rating ↕</th>
+          <th style="cursor:pointer;">Views ↕</th>
+          <th style="cursor:pointer;">Leads ↕</th>
+          <th style="cursor:pointer;">Active ↕</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="agents-table-body">
+        <tr data-agent-row="true" data-plan="professional" data-status="active" data-city="mumbai">
+          <td><input type="checkbox"></td>
+          <td><div><strong style="font-size:14px;">Rahul Sharma</strong><br><span style="font-size:12px;color:#5f6b7a;">rahul@example.com</span></div></td>
+          <td>Mumbai, MH</td>
+          <td><span class="badge badge-primary">professional</span></td>
+          <td>⭐ 4.5 <span style="color:#5f6b7a;font-size:12px;">(12)</span></td>
+          <td>1,245</td>
+          <td>45</td>
+          <td><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></td>
+          <td><button class="btn" style="font-size:12px;padding:4px 12px;" onclick="openModal('manage-modal')">Manage</button></td>
+        </tr>
+        <tr data-agent-row="true" data-plan="starter" data-status="active" data-city="delhi">
+          <td><input type="checkbox"></td>
+          <td><div><strong style="font-size:14px;">Priya Patel</strong><br><span style="font-size:12px;color:#5f6b7a;">priya@example.com</span></div></td>
+          <td>Delhi, DL</td>
+          <td><span class="badge badge-secondary">starter</span></td>
+          <td>⭐ 4.8 <span style="color:#5f6b7a;font-size:12px;">(24)</span></td>
+          <td>2,380</td>
+          <td>67</td>
+          <td><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></td>
+          <td><button class="btn" style="font-size:12px;padding:4px 12px;" onclick="openModal('manage-modal')">Manage</button></td>
+        </tr>
+        <tr data-agent-row="true" data-plan="professional" data-status="inactive" data-city="pune">
+          <td><input type="checkbox"></td>
+          <td><div><strong style="font-size:14px;">Kunal Desai</strong><br><span style="font-size:12px;color:#5f6b7a;">kunal@example.com</span></div></td>
+          <td>Pune, MH</td>
+          <td><span class="badge badge-primary">professional</span></td>
+          <td>⭐ 3.9 <span style="color:#5f6b7a;font-size:12px;">(8)</span></td>
+          <td>890</td>
+          <td>23</td>
+          <td><button class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></td>
+          <td><button class="btn" style="font-size:12px;padding:4px 12px;" onclick="openModal('manage-modal')">Manage</button></td>
+        </tr>
+        <tr data-agent-row="true" data-plan="starter" data-status="inactive" data-city="bangalore">
+          <td><input type="checkbox"></td>
+          <td><div><strong style="font-size:14px;">Anjali Verma</strong><br><span style="font-size:12px;color:#5f6b7a;">anjali@example.com</span></div></td>
+          <td>Bangalore, KA</td>
+          <td><span class="badge badge-secondary">starter</span></td>
+          <td>⭐ — <span style="color:#5f6b7a;font-size:12px;">(0)</span></td>
+          <td>156</td>
+          <td>5</td>
+          <td><button class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></td>
+          <td><button class="btn" style="font-size:12px;padding:4px 12px;" onclick="openModal('manage-modal')">Manage</button></td>
+        </tr>
+        <tr data-agent-row="true" data-plan="professional" data-status="active" data-city="jaipur">
+          <td><input type="checkbox"></td>
+          <td><div><strong style="font-size:14px;">Vikram Singh</strong><br><span style="font-size:12px;color:#5f6b7a;">vikram@example.com</span></div></td>
+          <td>Jaipur, RJ</td>
+          <td><span class="badge badge-primary">professional</span></td>
+          <td>⭐ 4.2 <span style="color:#5f6b7a;font-size:12px;">(15)</span></td>
+          <td>1,780</td>
+          <td>52</td>
+          <td><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></td>
+          <td><button class="btn" style="font-size:12px;padding:4px 12px;" onclick="openModal('manage-modal')">Manage</button></td>
+        </tr>
+        <tr id="agents-no-results" style="display:none;">
+          <td colspan="9" style="text-align:center;padding:22px 16px;color:#5f6b7a;">No agents found for your search.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div id="agents-results-summary" style="padding:12px 16px;border-top:1px solid #d7e0ea;font-size:13px;color:#5f6b7a;">
+      Showing 5 of 48 agents
+    </div>
+  </div>
+</div>
+
+<div id="manage-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('manage-modal')">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="font-size:18px;font-weight:700;margin:0;">Manage: Rahul Sharma</h2>
+      <button onclick="closeModal('manage-modal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#5f6b7a;">✕</button>
+    </div>
+    <div style="font-size:14px;line-height:2;">
+      <p><strong>Email:</strong> rahul@example.com</p>
+      <p><strong>Phone:</strong> +91 98765 43210</p>
+      <p><strong>Location:</strong> Mumbai, MH</p>
+      <p><strong>Plan:</strong> <span class="badge badge-secondary" style="text-transform:capitalize;">professional</span></p>
+      <p><strong>License:</strong> IRDAI-2024-MH-1234</p>
+      <p><strong>Experience:</strong> 8 years</p>
+    </div>
+    <div class="separator"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <p style="font-weight:600;margin:0;">Profile Active</p>
+        <p style="font-size:12px;color:#5f6b7a;margin:2px 0 0;">Controls whether the profile is visible publicly</p>
+      </div>
+      <button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button>
+    </div>
+    <div class="separator"></div>
+    <h4 style="font-size:14px;font-weight:600;margin:0 0 12px;">Profile Section Controls</h4>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;">Full Profile Visibility</span><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;">Certificates Section</span><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;">Achievements Section</span><button class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;">Comments/Reviews Section</span><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;">Gallery Section</span><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;">Contact Information</span><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');"></button></div>
+    </div>
+    <div class="separator"></div>
+    <label style="font-size:14px;font-weight:500;display:block;margin-bottom:6px;">Admin Notes</label>
+    <textarea rows="3" placeholder="Internal notes about this agent..." style="margin-bottom:8px;">Top performing agent in Mumbai region. Renewed subscription on time.</textarea>
+    <button class="btn" style="font-size:13px;">Save Notes</button>
+    <div class="separator"></div>
+    <button class="btn" style="width:100%;justify-content:center;">📨 Send Message to Agent</button>
+  </div>
+</div>
+</body></html>

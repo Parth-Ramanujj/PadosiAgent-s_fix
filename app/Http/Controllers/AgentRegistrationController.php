@@ -1,0 +1,1312 @@
+<?php
+// app/Http\Controllers/AgentRegistrationController.php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Agent;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
+
+class AgentRegistrationController extends Controller
+{
+    public function showRegistrationForm()
+    {
+        return view('agent-registration');
+    }
+
+    /**
+     * Redirect to Google for authentication
+     */
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
+
+            // Store in session
+            session([
+                'google_user' => [
+                    'email' => $googleUser->getEmail(),
+                    'fullname' => $googleUser->getName(),
+                    'google_id' => $googleUser->getId()
+                ]
+            ]);
+
+            // Return HTML that auto-closes the popup
+            return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Authentication Complete</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 40px;
+                    font-family: Arial, sans-serif;
+                    text-align: center;
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                }
+                .success-icon {
+                    font-size: 48px;
+                    margin-bottom: 20px;
+                }
+                .message {
+                    margin-bottom: 30px;
+                }
+                .close-btn {
+                    background: white;
+                    color: #059669;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='success-icon'>✅</div>
+            <div class='message'>
+                <h2>Authentication Successful!</h2>
+                <p>Your information has been filled in the form.</p>
+                <p>Closing this window...</p>
+            </div>
+            <button class='close-btn' onclick='window.close()'>Close Window</button>
+
+            <script>
+                // Auto-close after 2 seconds
+                setTimeout(() => {
+                    window.close();
+                }, 2000);
+                
+                // Close on any click
+                document.addEventListener('click', function() {
+                    window.close();
+                });
+                
+                // Close on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        window.close();
+                    }
+                });
+            </script>
+        </body>
+        </html>";
+        } catch (\Exception $e) {
+            Log::error('Google auth error: ' . $e->getMessage());
+            return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Authentication Failed</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 40px;
+                    font-family: Arial, sans-serif;
+                    text-align: center;
+                    background: #ef4444;
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                }
+            </style>
+        </head>
+        <body>
+            <div style='font-size:48px;margin-bottom:20px;'>❌</div>
+            <h2>Authentication Failed!</h2>
+            <p>Please try again.</p>
+            <button onclick='window.close()' style='padding:10px 20px;background:white;color:#ef4444;border:none;border-radius:5px;cursor:pointer;'>Close</button>
+        </body>
+        </html>";
+        }
+    }
+
+    public function getGoogleSessionData()
+    {
+        $googleUser = session('google_user');
+
+        if ($googleUser) {
+            // Clear session after retrieving data
+            session()->forget('google_user');
+
+            return response()->json([
+                'success' => true,
+                'user' => $googleUser
+            ]);
+        }
+
+        return response()->json(['success' => false]);
+    }
+    // public function handleGoogleCallback(Request $request)
+    // {
+    //     try {
+    //         $googleUser = Socialite::driver('google')->user();
+
+    //         Log::info('Google callback received:', [
+    //             'email' => $googleUser->getEmail(),
+    //             'name' => $googleUser->getName()
+    //         ]);
+
+    //         // Return JSON response for popup
+    //         return response()->json([
+    //             'success' => true,
+    //             'user' => [
+    //                 'email' => $googleUser->getEmail(),
+    //                 'fullname' => $googleUser->getName(),
+    //                 'google_id' => $googleUser->getId()
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         Log::error('Google callback error: ' . $e->getMessage());
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Google authentication failed. Please try again.'
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+     * Get Google user data for pre-filling form
+     */
+    public function getGoogleUserData()
+    {
+        try {
+            $googleUser = session('google_user');
+
+            if ($googleUser) {
+                return response()->json([
+                    'success' => true,
+                    'user' => [
+                        'email' => $googleUser['email'],
+                        'fullname' => $googleUser['fullname']
+                    ]
+                ]);
+            }
+
+            return response()->json(['success' => false]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false], 500);
+        }
+    }
+
+    /**
+     * Clear Google session data
+     */
+    public function clearGoogleSession()
+    {
+        session()->forget('google_user');
+        return response()->json(['success' => true]);
+    }
+
+    public function registerStep1(Request $request)
+    {
+        Log::info('STEP 1 - Received data:', $request->all());
+
+        try {
+            // Validation
+            $request->validate([
+                'fullname' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'mobile' => 'required|string|max:15',
+                'user_types' => 'required|array|min:1'
+            ]);
+
+            $currentAgentId = session('current_agent_id');
+
+            // Check if email already exists (excluding current session if any)
+            $existingAgent = Agent::where('email', $request->email)->first();
+
+            if ($existingAgent && $existingAgent->id != $currentAgentId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This email is already registered. Please use a different email or login to your account.'
+                ], 422);
+            }
+
+            // Check if mobile already exists (excluding current session if any)
+            $existingMobile = Agent::where('mobile', $request->mobile)->first();
+            if ($existingMobile && $existingMobile->id != $currentAgentId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This phone number is already registered. Please use a different phone number.'
+                ], 422);
+            }
+
+            // Check if we have Google user data in session
+            $googleUser = session('google_user');
+            $isGoogleAuth = !empty($googleUser);
+
+            // Prepare agent data
+            $agentData = [
+                'fullname' => $request->fullname,
+                'email' => $request->email,
+                'mobile' => $request->mobile,
+                'user_types' => json_encode($request->user_types),
+                'registration_step' => 1,
+                'status' => 'incomplete',
+            ];
+
+            // Add Google-specific data if available
+            if ($isGoogleAuth) {
+                $agentData['google_id'] = $googleUser['google_id'];
+                $agentData['email_verified_at'] = now();
+            }
+
+            // Create or update agent
+            if ($currentAgentId) {
+                $currentAgent = Agent::find($currentAgentId);
+
+                if ($currentAgent) {
+                    // Check what changed
+                    $isSameEmail = ($currentAgent->email === $request->email);
+                    $isSameMobile = ($currentAgent->mobile === $request->mobile);
+
+                    // Your scenario logic
+                    if ($isSameEmail && $isSameMobile) {
+                        // Case 1: Both same - normal continuation
+                        $agent = $currentAgent;
+                        $agent->update($agentData);
+                        $operation = 'updated_both_same';
+                        $reason = 'Both email and mobile unchanged';
+                    } elseif ($isSameMobile && !$isSameEmail) {
+                        // Case 2: Mobile same, email changed - UPDATE (user updating email)
+                        $agent = $currentAgent;
+                        $agent->update($agentData);
+                        $operation = 'updated_email_changed';
+                        $reason = 'Mobile same, email updated';
+                    } elseif (!$isSameMobile && $isSameEmail) {
+                        // Case 3: Email same, mobile changed - UPDATE (user updating mobile)
+                        $agent = $currentAgent;
+                        $agent->update($agentData);
+                        $operation = 'updated_mobile_changed';
+                        $reason = 'Email same, mobile updated';
+                    } else {
+                        // Case 4: Both email AND mobile different - CREATE NEW (different person)
+                        session()->forget('current_agent_id');
+                        $agent = Agent::create($agentData);
+                        session(['current_agent_id' => $agent->id]);
+                        $operation = 'created_new_both_different';
+                        $reason = 'Both email and mobile different - new person';
+                    }
+                } else {
+                    // Agent not found in DB, create new
+                    $agent = Agent::create($agentData);
+                    session(['current_agent_id' => $agent->id]);
+                    $operation = 'created_new_not_found';
+                    $reason = 'Agent not found in database';
+                }
+            } else {
+                // No session, create new agent
+                $agent = Agent::create($agentData);
+                session(['current_agent_id' => $agent->id]);
+                $operation = 'created_new_no_session';
+                $reason = 'No existing session';
+            }
+
+            // Clear Google session data
+            if ($isGoogleAuth) {
+                session()->forget('google_user');
+            }
+
+            Log::info('STEP 1 - Agent ' . $operation . ' with ID: ' . $agent->id, [
+                'reason' => $reason,
+                'previous_email' => isset($currentAgent) ? $currentAgent->email : 'N/A',
+                'previous_mobile' => isset($currentAgent) ? $currentAgent->mobile : 'N/A',
+                'new_email' => $agent->email,
+                'new_mobile' => $agent->mobile
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Basic information saved successfully!',
+                'next_step' => 2,
+                'agent_id' => $agent->id,
+                'is_google_auth' => $isGoogleAuth,
+                'operation' => $operation
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('STEP 1 - Validation Error: ' . json_encode($e->errors()));
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('STEP 1 - Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function registerStep1_itsgood(Request $request)
+    {
+        Log::info('STEP 1 - Received data:', $request->all());
+
+        try {
+            // Validation
+            $request->validate([
+                'fullname' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'mobile' => 'required|string|max:15',
+                'user_types' => 'required|array|min:1'
+            ]);
+
+            $currentAgentId = session('current_agent_id');
+
+            // Check if email already exists (excluding current session if any)
+            $existingAgent = Agent::where('email', $request->email)->first();
+
+            if ($existingAgent && $existingAgent->id != $currentAgentId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This email is already registered. Please use a different email or login to your account.'
+                ], 422);
+            }
+
+            // Check if mobile already exists (excluding current session if any)
+            $existingMobile = Agent::where('mobile', $request->mobile)->first();
+            if ($existingMobile && $existingMobile->id != $currentAgentId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This phone number is already registered. Please use a different phone number.'
+                ], 422);
+            }
+
+            // Check if we have Google user data in session
+            $googleUser = session('google_user');
+            $isGoogleAuth = !empty($googleUser);
+
+            // Prepare agent data - ONLY fields that exist in your table
+            $agentData = [
+                'fullname' => $request->fullname,
+                'email' => $request->email,
+                'mobile' => $request->mobile,
+                'user_types' => json_encode($request->user_types), // or $request->user_types if column is array type
+                'registration_step' => 1,
+                'status' => 'incomplete',
+            ];
+
+            // Add Google-specific data if available
+            if ($isGoogleAuth) {
+                $agentData['google_id'] = $googleUser['google_id'];
+                $agentData['email_verified_at'] = now();
+            }
+
+            // Create or update agent
+            if ($currentAgentId) {
+                $currentAgent = Agent::find($currentAgentId);
+
+                if ($currentAgent) {
+                    // Check if this is the same person or different person
+                    $isSamePerson = ($currentAgent->email === $request->email &&
+                        $currentAgent->mobile === $request->mobile);
+
+                    if ($isSamePerson) {
+                        // Same person continuing - UPDATE
+                        $agent = $currentAgent;
+                        $agent->update($agentData);
+                    } else {
+                        // Different person - CREATE NEW and clear old session
+                        session()->forget('current_agent_id');
+                        $agent = Agent::create($agentData);
+                        session(['current_agent_id' => $agent->id]);
+
+                        Log::info('STEP 1 - Different person detected, created new agent. Old ID: ' . $currentAgentId . ', New ID: ' . $agent->id);
+                    }
+                } else {
+                    // Agent not found in DB (session corrupted), create new
+                    $agent = Agent::create($agentData);
+                    session(['current_agent_id' => $agent->id]);
+
+                    Log::info('STEP 1 - Agent not found in DB, created new agent with ID: ' . $agent->id);
+                }
+            } else {
+                // No session, create new agent
+                $agent = Agent::create($agentData);
+                session(['current_agent_id' => $agent->id]);
+
+                Log::info('STEP 1 - No session found, created new agent with ID: ' . $agent->id);
+            }
+
+            // Clear Google session data after successful registration
+            if ($isGoogleAuth) {
+                session()->forget('google_user');
+            }
+
+            Log::info('STEP 1 - Agent processed with ID: ' . $agent->id, [
+                'previous_agent_id' => $currentAgentId,
+                'email' => $agent->email,
+                'mobile' => $agent->mobile,
+                'operation' => isset($isSamePerson) && $isSamePerson ? 'updated' : 'created'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Basic information saved successfully!',
+                'next_step' => 2,
+                'agent_id' => $agent->id,
+                'is_google_auth' => $isGoogleAuth,
+                'operation' => isset($isSamePerson) && $isSamePerson ? 'updated' : 'created_new'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('STEP 1 - Validation Error: ' . json_encode($e->errors()));
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('STEP 1 - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function registerStep1_old(Request $request)
+    {
+        Log::info('STEP 1 - Received data:', $request->all());
+
+        try {
+            // Validation
+            $request->validate([
+                'fullname' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'mobile' => 'required|string|max:15',
+                'user_types' => 'required|array|min:1'
+            ]);
+
+            // Check if email already exists (excluding current session if any)
+            $existingAgent = Agent::where('email', $request->email)->first();
+            $currentAgentId = session('current_agent_id');
+
+            if ($existingAgent) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This email is already registered. Please use a different email or login to your account.'
+                ], 422);
+            }
+
+            // Check if mobile already exists (excluding current session if any)
+            $existingMobile = Agent::where('mobile', $request->mobile)->first();
+            if ($existingMobile) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This mobile number is already registered. Please use a different mobile number.'
+                ], 422);
+            }
+
+            // Check if we have Google user data in session
+            $googleUser = session('google_user');
+            $isGoogleAuth = !empty($googleUser);
+
+            // Prepare agent data
+            $agentData = [
+                'fullname' => $request->fullname,
+                'email' => $request->email,
+                'mobile' => $request->mobile,
+                'user_types' => $request->user_types,
+                'registration_step' => 1,
+                'status' => 'incomplete',
+            ];
+
+            // Add Google-specific data if available
+            if ($isGoogleAuth) {
+                $agentData['google_id'] = $googleUser['google_id'];
+                $agentData['email_verified_at'] = now(); // Mark email as verified for Google users
+            }
+
+            // Create or update agent
+            if ($existingAgent && $existingAgent->id == $currentAgentId) {
+                // Update existing agent
+                $agent = $existingAgent;
+                $agent->update($agentData);
+            } else {
+                // Create new agent
+                $agentData['unique_id'] = 'PAD' . Str::random(6) . time();
+                $agentData['password'] = Hash::make(Str::random(12));
+
+                $agent = Agent::create($agentData);
+            }
+
+            // Store agent ID in session for subsequent steps
+            session(['current_agent_id' => $agent->id]);
+
+            // Clear Google session data after successful registration
+            if ($isGoogleAuth) {
+                session()->forget('google_user');
+            }
+
+            Log::info('STEP 1 - Agent created/updated with ID: ' . $agent->id, [
+                'google_id' => $agent->google_id,
+                'email_verified_at' => $agent->email_verified_at
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Basic information saved successfully!',
+                'next_step' => 2,
+                'agent_id' => $agent->id,
+                'is_google_auth' => $isGoogleAuth
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('STEP 1 - Validation Error: ' . json_encode($e->errors()));
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('STEP 1 - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function registerStep2(Request $request)
+    {
+        Log::info('STEP 2 - Received data:', $request->all());
+
+        try {
+            // Get agent ID from session
+            $agentId = session('current_agent_id');
+
+            if (!$agentId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Session expired. Please start registration again.'
+                ], 400);
+            }
+
+            // Find the agent
+            $agent = Agent::find($agentId);
+            if (!$agent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Agent record not found. Please start registration again.'
+                ], 404);
+            }
+
+            // Define valid insurance companies
+            $validInsuranceCompanies = [
+                'Life Insurance Corporation of India',
+                'Axis Max Life Insurance Limited',
+                'HDFC Life Insurance Company Limited',
+                'ICICI Prudential Life Insurance Company Limited',
+                'Kotak Mahindra Life Insurance Company Limited',
+                'Aditya Birla SunLife Insurance Company Limited',
+                'TATA AIA Life Insurance Company Limited',
+                'SBI Life Insurance Company Limited',
+                'Bajaj Life Insurance Limited',
+                'PNB MetLife India Insurance Company Limited',
+                'Reliance Nippon Life Insurance Company Limited',
+                'Aviva Life Insurance Company India Limited',
+                'Sahara India Life Insurance Company Limited',
+                'Shriram Life Insurance Company Limited',
+                'Bharti AXA Life Insurance Company Limited',
+                'Generali Central Life Insurance Company Limited',
+                'Ageas Federal Life Insurance Company Limited',
+                'Canara HSBC Life Insurance Company Limited',
+                'Bandhan Life Insurance Limited',
+                'Pramerica Life Insurance Company Limited',
+                'Star Union Dai-Ichi Life Insurance Company Limited',
+                'IndiaFirst Life Insurance Company Limited',
+                'Edelweiss Life Insurance Company Limited',
+                'CreditAccess Life Insurance Limited',
+                'Acko Life Insurance Limited',
+                'Go Digit Life Insurance Limited',
+                'Acko General Insurance Limited',
+                'Agriculture Insurance Company of India Limited',
+                'Bajaj General Insurance Limited',
+                'Cholamandalam MS General Insurance Company Limited',
+                'ECGC Limited',
+                'Generali Central Insurance Company Limited',
+                'Go Digit General Insurance Limited',
+                'HDFC ERGO General Insurance Company Limited',
+                'ICICI LOMBARD General Insurance Company Limited',
+                'IFFCO TOKIO General Insurance Company Limited',
+                'Zurich Kotak General Insurance Company Limited',
+                'Kshema General Insurance Limited',
+                'Liberty General Insurance Limited',
+                'Magma General Insurance Limited',
+                'National Insurance Company Limited',
+                'Navi General Insurance Limited',
+                'Raheja QBE General Insurance Co. Ltd.',
+                'Reliance General Insurance Company Limited',
+                'Royal Sundaram General Insurance Company Limited',
+                'SBI General Insurance Company Limited',
+                'Shriram General Insurance Company Limited',
+                'Tata AIG General Insurance Company Limited',
+                'The New India Assurance Company Limited',
+                'The Oriental Insurance Company Limited',
+                'United India Insurance Company Limited',
+                'Universal Sompo General Insurance Company Limited',
+                'Zuna General Insurance Ltd.',
+                'Aditya Birla Health Insurance Co. Limited',
+                'Care Health Insurance Ltd.',
+                'Galaxy Health and Allied Insurance Company Limited',
+                'ManipalCigna Health Insurance Company Limited',
+                'Niva Bupa Health Insurance Company Limited',
+                'Reliance Health Insurance Ltd.',
+                'Star Health & Allied Insurance Co. Ltd.',
+                'Narayana Health Insurance Company Limited'
+            ];
+
+            // Validate insurance companies if provided
+            $insuranceCompanies = [];
+            if (!$request->has('insurance_companies')) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please add atlest one insurance company.'
+                ], 422);
+            }
+
+            if ($request->has('insurance_companies') && !empty($request->insurance_companies)) {
+                $insuranceCompanies = json_decode($request->insurance_companies, true);
+
+                if (!is_array($insuranceCompanies)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid insurance companies format.'
+                    ], 422);
+                }
+
+                // Check for invalid companies
+                $invalidCompanies = array_diff($insuranceCompanies, $validInsuranceCompanies);
+                if (!empty($invalidCompanies)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid insurance companies selected: ' . implode(', ', $invalidCompanies)
+                    ], 422);
+                }
+            }
+
+            $portfolioTotal = ($request->life_insurance ?? 0) +
+                ($request->health_insurance ?? 0) +
+                ($request->general_insurance ?? 0) +
+                ($request->motor ?? 0);
+
+            if ($portfolioTotal !== 100) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Portfolio distribution must total 100%. Current total: ' . $portfolioTotal . '%'
+                ], 422);
+            }
+
+            // Validation for step 2
+            $request->validate([
+                'license_number' => 'nullable|string|max:255',
+                'pan_number' => 'nullable|string|max:20',
+                'insurance_companies' => 'nullable|string', // Keep as string since it's JSON
+                'experience_range' => 'required|string|max:50',
+                'client_base' => 'required|string|max:50',
+                'life_insurance' => 'nullable|integer|min:0|max:100',
+                'health_insurance' => 'nullable|integer|min:0|max:100',
+                'general_insurance' => 'nullable|integer|min:0|max:100',
+                'motor' => 'nullable|integer|min:0|max:100',
+                //'others' => 'nullable|integer|min:0|max:100',
+                'desired_services' => 'nullable|array',
+                'software_services' => 'nullable|array',
+                'software_name' => 'nullable|string|max:255',
+            ]);
+
+            // Validate portfolio total is 100%
+            // $portfolioTotal = ($request->life_insurance ?? 0) +
+            //     ($request->health_insurance ?? 0) +
+            //     ($request->general_insurance ?? 0) +
+            //     ($request->motor ?? 0) +
+            //     ($request->others ?? 0);
+
+            // $portfolioTotal = ($request->life_insurance ?? 0) +
+            //     ($request->health_insurance ?? 0) +
+            //     ($request->general_insurance ?? 0) +
+            //     ($request->motor ?? 0);
+
+            // if ($portfolioTotal !== 100) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'Portfolio distribution must total 100%. Current total: ' . $portfolioTotal . '%'
+            //     ], 422);
+            // }
+
+            // Update agent with professional details
+            $updateData = [
+                'license_number' => $request->license_number,
+                'pan_number' => $request->pan_number,
+                'insurance_companies' => $insuranceCompanies, // Use validated array
+                'experience_range' => $request->experience_range,
+                'client_base' => $request->client_base,
+                'portfolio_breakdown' => [
+                    'life_insurance' => $request->life_insurance ?? 0,
+                    'health_insurance' => $request->health_insurance ?? 0,
+                    'general_insurance' => $request->general_insurance ?? 0,
+                    'motor' => $request->motor ?? 0,
+                    //'others' => $request->others ?? 0,
+                ],
+                'desired_services' => $request->desired_services,
+                'registration_step' => 2,
+                'profile_completed_at' => now(),
+            ];
+
+            // Add software name if provided
+            if ($request->software_services && in_array('Yes', $request->software_services)) {
+                $updateData['software_name'] = $request->software_name;
+            }
+
+            $agent->update($updateData);
+
+            Log::info('STEP 2 - Agent updated: ' . $agent->id, [
+                'pan_number' => $agent->pan_number,
+                'software_name' => $agent->software_name,
+                'insurance_companies' => $agent->insurance_companies,
+                'portfolio_total' => $portfolioTotal
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Professional details saved successfully!',
+                'next_step' => 3,
+                'agent_id' => $agent->id
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('STEP 2 - Validation Error: ' . json_encode($e->errors()));
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Please check the form data again!',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('STEP 2 - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function completeRegistration(Request $request)
+    {
+        Log::info('COMPLETE REGISTRATION - Starting', $request->all());
+
+        try {
+            // Get agent ID from session
+            $agentId = session('current_agent_id');
+
+            if (!$agentId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Session expired. Please start registration again.'
+                ], 400);
+            }
+
+            // Find the agent
+            $agent = Agent::find($agentId);
+            if (!$agent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Agent record not found. Please start registration again.'
+                ], 404);
+            }
+
+            // Validate plan selection
+            $request->validate([
+                'plan_type' => 'required|in:basic,professional',
+                'plan_name' => 'required|string',
+                'plan_amount' => 'required|numeric'
+            ]);
+
+            $planType = $request->plan_type;
+            $planName = $request->plan_name;
+            $planAmount = $request->plan_amount;
+
+            // Calculate total with GST (18%)
+            $gst = $planAmount * 0.18;
+            $totalAmount = round($planAmount + $gst);
+
+            // Update agent with plan details
+            $agent->update([
+                'registration_step' => 3,
+                'status' => 'pending_payment',
+                'selected_plan' => [
+                    'type' => $planType,
+                    'name' => $planName,
+                    'base_amount' => $planAmount,
+                    'gst_amount' => $gst,
+                    'total_amount' => $totalAmount
+                ],
+                'registration_amount' => $totalAmount,
+                //'payment_initiated_at' => now(),
+            ]);
+
+            Log::info('COMPLETE REGISTRATION - Agent ready for payment: ' . $agent->id, [
+                'plan_type' => $planType,
+                'plan_name' => $planName,
+                'total_amount' => $totalAmount
+            ]);
+
+            // Initialize Razorpay
+            $key = env('RAZORPAY_KEY');
+            $secret = env('RAZORPAY_SECRET');
+
+            if (!empty($key) && !empty($secret) && $key !== 'your_razorpay_key_here') {
+                $razorpay = new \Razorpay\Api\Api($key, $secret);
+
+                // Create Razorpay order (amount in paise)
+                $amountInPaise = $totalAmount * 100;
+
+                $orderData = [
+                    'receipt' => 'agent_' . $agent->id . '_' . time(),
+                    'amount' => $amountInPaise,
+                    'currency' => 'INR',
+                    'payment_capture' => 1,
+                    'notes' => [
+                        'agent_id' => $agent->id,
+                        'agent_email' => $agent->email,
+                        'plan_type' => $planType,
+                        'plan_name' => $planName,
+                        'purpose' => 'Agent Registration - ' . $planName
+                    ]
+                ];
+
+                $razorpayOrder = $razorpay->order->create($orderData);
+
+                // Update agent with Razorpay order ID
+                $agent->update([
+                    'razorpay_order_id' => $razorpayOrder['id']
+                ]);
+
+                Log::info('Razorpay order created: ' . $razorpayOrder['id']);
+
+                return response()->json([
+                    'success' => true,
+                    'order_id' => $razorpayOrder['id'],
+                    'amount' => $orderData['amount'],
+                    'currency' => $orderData['currency'],
+                    'key' => $key,
+                    'agent_id' => $agent->id,
+                    'name' => $agent->fullname,
+                    'email' => $agent->email,
+                    'mobile' => $agent->mobile,
+                    'plan_type' => $planType,
+                    'plan_name' => $planName,
+                    'plan_amount' => $planAmount,
+                    'total_amount' => $totalAmount,
+                    'test_payment' => false
+                ]);
+            } else {
+                // If Razorpay not configured, mark as test payment
+                $agent->update([
+                    'payment_status' => 'completed',
+                    'status' => 'active',
+                    'razorpay_payment_id' => 'test_pay_' . time(),
+                    'razorpay_order_id' => 'test_order_' . time(),
+                    //'payment_completed_at' => now(),
+                ]);
+
+                Log::info('Test payment completed for agent: ' . $agent->id);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration completed successfully! (Test Mode)',
+                    'test_payment' => true,
+                    'agent_id' => $agent->id,
+                    'plan_name' => $planName
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('COMPLETE REGISTRATION - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function handlePaymentSuccess(Request $request)
+    {
+        Log::info('PAYMENT SUCCESS - Received:', $request->all());
+
+        try {
+            $agent = Agent::find($request->agent_id);
+
+            if (!$agent) {
+                throw new \Exception('Agent not found');
+            }
+
+
+            // Check if payment already processed (prevents double processing)
+            if ($agent->payment_status === 'completed') {
+                Log::warning('Payment already processed for agent: ' . $agent->id);
+
+                // Clear session if still exists
+                session()->forget('current_agent_id');
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment already processed successfully.'
+                ]);
+            }
+
+            // Validate required fields
+            if (empty($request->razorpay_payment_id) || empty($request->razorpay_order_id) || empty($request->razorpay_signature)) {
+                throw new \Exception('Missing payment verification data');
+            }
+
+
+
+            // Verify payment signature if Razorpay is configured
+            $key = env('RAZORPAY_KEY');
+            $secret = env('RAZORPAY_SECRET');
+
+            if (!empty($key) && !empty($secret) && $key !== 'your_razorpay_key_here') {
+                $razorpay = new \Razorpay\Api\Api($key, $secret);
+
+                $attributes = [
+                    'razorpay_order_id' => $request->razorpay_order_id,
+                    'razorpay_payment_id' => $request->razorpay_payment_id,
+                    'razorpay_signature' => $request->razorpay_signature
+                ];
+
+                $razorpay->utility->verifyPaymentSignature($attributes);
+                Log::info('Payment signature verified successfully');
+            }
+
+            // Update agent payment status to completed
+            $agent->update([
+                'payment_status' => 'completed',
+                'status' => 'active',
+                'razorpay_payment_id' => $request->razorpay_payment_id,
+                'razorpay_order_id' => $request->razorpay_order_id,
+                'razorpay_signature' => $request->razorpay_signature,
+                // 'payment_completed_at' => now(),
+                // 'registration_completed_at' => now(),
+            ]);
+
+            // Clear session
+            session()->forget('current_agent_id');
+
+            Log::info('PAYMENT SUCCESS - Agent registration completed: ' . $agent->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment successful! Your registration is now complete.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PAYMENT SUCCESS - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment verification failed: ' . $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Handle Razorpay webhook
+     */
+    public function handleWebhook(Request $request)
+    {
+        // Get raw body and signature
+        $payload = $request->getContent();
+        $receivedSignature = $request->header('X-Razorpay-Signature');
+
+        Log::info('RAZORPAY WEBHOOK RECEIVED', [
+            'signature' => $receivedSignature,
+            'payload' => $payload
+        ]);
+
+        // Verify webhook signature
+        $webhookSecret = env('RAZORPAY_WEBHOOK_SECRET');
+
+        if (!$webhookSecret) {
+            Log::error('RAZORPAY_WEBHOOK_SECRET not configured');
+            return response('Webhook secret not configured', 400);
+        }
+
+        // $expectedSignature = hash_hmac('sha256', $payload, $webhookSecret);
+
+        // if ($receivedSignature !== $expectedSignature) {
+        //     Log::error('WEBHOOK SIGNATURE INVALID', [
+        //         'expected' => $expectedSignature,
+        //         'received' => $receivedSignature
+        //     ]);
+        //     return response('Invalid signature', 400);
+        // }
+
+        $data = json_decode($payload, true);
+        $event = $data['event'] ?? null;
+
+        if (!$event) {
+            return response('Invalid event', 400);
+        }
+
+        Log::info('WEBHOOK EVENT: ' . $event);
+
+        try {
+            switch ($event) {
+                case 'payment.captured':
+                    $this->handlePaymentCaptured($data['payload']['payment']['entity']);
+                    break;
+
+                case 'payment.failed':
+                    $this->handlePaymentFailed($data['payload']['payment']['entity']);
+                    break;
+
+                case 'order.paid':
+                    $this->handleOrderPaid($data['payload']['order']['entity']);
+                    break;
+            }
+
+            return response('Webhook processed successfully', 200);
+        } catch (\Exception $e) {
+            Log::error('WEBHOOK PROCESSING ERROR: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response('Error processing webhook', 500);
+        }
+    }
+
+    /**
+     * Handle successful payment
+     */
+    private function handlePaymentCaptured($payment)
+    {
+        Log::info('PAYMENT CAPTURED WEBHOOK', $payment);
+
+        $orderId = $payment['order_id'];
+
+        // Find agent by razorpay_order_id
+        $agent = Agent::where('razorpay_order_id', $orderId)->first();
+
+        if (!$agent) {
+            Log::error('Agent not found for order: ' . $orderId);
+            return;
+        }
+
+        // Update agent status
+        $agent->update([
+            'payment_status' => 'completed',
+            'status' => 'active',
+            'razorpay_payment_id' => $payment['id'],
+            //'payment_completed_at' => now(),
+            //'registration_completed_at' => now(),
+        ]);
+
+        Log::info('WEBHOOK: Agent activated via webhook: ' . $agent->id);
+
+        // You can also trigger emails or notifications here
+        // $this->sendRegistrationEmail($agent);
+    }
+
+    /**
+     * Handle failed payment
+     */
+    private function handlePaymentFailed($payment)
+    {
+        Log::info('PAYMENT FAILED WEBHOOK', $payment);
+
+        $orderId = $payment['order_id'];
+
+        $agent = Agent::where('razorpay_order_id', $orderId)->first();
+
+        if ($agent) {
+            $agent->update([
+                'payment_status' => 'failed',
+                'status' => 'pending_payment',
+                //'last_payment_error' => $payment['error_description'] ?? 'Payment failed',
+            ]);
+
+            Log::info('WEBHOOK: Payment failed for agent: ' . $agent->id);
+        }
+    }
+
+    /**
+     * Handle order paid (alternative to payment.captured)
+     */
+    private function handleOrderPaid($order)
+    {
+        Log::info('ORDER PAID WEBHOOK', $order);
+
+        $agent = Agent::where('razorpay_order_id', $order['id'])->first();
+
+        if ($agent && !$agent->payment_status === 'completed') {
+            $agent->update([
+                'payment_status' => 'completed',
+                'status' => 'active',
+                //'payment_completed_at' => now(),
+            ]);
+
+            Log::info('WEBHOOK: Order paid for agent: ' . $agent->id);
+        }
+    }
+
+
+    public function completeRegistration_OLD(Request $request)
+    {
+        Log::info('COMPLETE REGISTRATION - Starting');
+
+        try {
+            // Get agent ID from session
+            $agentId = session('current_agent_id');
+
+            if (!$agentId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Session expired. Please start registration again.'
+                ], 400);
+            }
+
+            // Find the agent
+            $agent = Agent::find($agentId);
+            if (!$agent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Agent record not found. Please start registration again.'
+                ], 404);
+            }
+
+            // Check if agent has completed step 2
+            // if ($agent->registration_step < 2) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'Please complete all registration steps first.'
+            //     ], 400);
+            // }
+
+            // Update agent status to pending payment
+            $agent->update([
+                'registration_step' => 3,
+                'status' => 'pending_payment',
+                'registration_amount' => 2358.00,
+                'payment_initiated_at' => now(),
+            ]);
+
+            Log::info('COMPLETE REGISTRATION - Agent ready for payment: ' . $agent->id);
+
+            // Initialize Razorpay
+            $key = env('RAZORPAY_KEY');
+            $secret = env('RAZORPAY_SECRET');
+
+            if (!empty($key) && !empty($secret) && $key !== 'your_razorpay_key_here') {
+                $razorpay = new \Razorpay\Api\Api($key, $secret);
+
+                // Create Razorpay order
+                $orderData = [
+                    'receipt' => 'agent_' . $agent->id,
+                    'amount' => 235800, // ₹2358 in paise
+                    'currency' => 'INR',
+                    'payment_capture' => 1,
+                    'notes' => [
+                        'agent_id' => $agent->id,
+                        'agent_email' => $agent->email,
+                        'purpose' => 'Agent Registration Fee'
+                    ]
+                ];
+
+                $razorpayOrder = $razorpay->order->create($orderData);
+
+                // Update agent with Razorpay order ID
+                $agent->update([
+                    'razorpay_order_id' => $razorpayOrder['id']
+                ]);
+
+                Log::info('Razorpay order created: ' . $razorpayOrder['id']);
+
+                return response()->json([
+                    'success' => true,
+                    'order_id' => $razorpayOrder['id'],
+                    'amount' => $orderData['amount'],
+                    'currency' => $orderData['currency'],
+                    'key' => $key,
+                    'agent_id' => $agent->id,
+                    'name' => $agent->fullname,
+                    'email' => $agent->email,
+                    'mobile' => $agent->mobile,
+                    'test_payment' => false
+                ]);
+            } else {
+                // If Razorpay not configured, mark as test payment
+                $agent->update([
+                    'payment_status' => 'completed',
+                    'status' => 'active',
+                    'razorpay_payment_id' => 'test_pay_' . time(),
+                    'razorpay_order_id' => 'test_order_' . time(),
+                    'payment_completed_at' => now(),
+                ]);
+
+                Log::info('Test payment completed for agent: ' . $agent->id);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration completed successfully! (Test Mode)',
+                    'test_payment' => true,
+                    'agent_id' => $agent->id
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('COMPLETE REGISTRATION - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check email availability (optional API endpoint)
+     */
+    public function checkEmail(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+
+            $exists = Agent::where('email', $request->email)->exists();
+
+            return response()->json([
+                'success' => true,
+                'available' => !$exists,
+                'message' => $exists ? 'Email already registered' : 'Email available'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error checking email: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

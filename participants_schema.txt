@@ -1,0 +1,163 @@
+Array
+(
+    [0] => stdClass Object
+        (
+            [Field] => id
+            [Type] => bigint unsigned
+            [Null] => NO
+            [Key] => PRI
+            [Default] => 
+            [Extra] => auto_increment
+        )
+
+    [1] => stdClass Object
+        (
+            [Field] => full_name
+            [Type] => varchar(191)
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [2] => stdClass Object
+        (
+            [Field] => email
+            [Type] => varchar(191)
+            [Null] => NO
+            [Key] => UNI
+            [Default] => 
+            [Extra] => 
+        )
+
+    [3] => stdClass Object
+        (
+            [Field] => phone_number
+            [Type] => varchar(191)
+            [Null] => NO
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [4] => stdClass Object
+        (
+            [Field] => have_insurance
+            [Type] => enum('yes','no')
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [5] => stdClass Object
+        (
+            [Field] => insurance_products
+            [Type] => longtext
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [6] => stdClass Object
+        (
+            [Field] => insurance_planning
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [7] => stdClass Object
+        (
+            [Field] => mutual_fund
+            [Type] => enum('yes','no')
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [8] => stdClass Object
+        (
+            [Field] => mf_plan
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [9] => stdClass Object
+        (
+            [Field] => thank_my_padosi
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [10] => stdClass Object
+        (
+            [Field] => thank_my_padosi_for
+            [Type] => text
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [11] => stdClass Object
+        (
+            [Field] => participant_shared
+            [Type] => enum('Yes','No')
+            [Null] => NO
+            [Key] => 
+            [Default] => No
+            [Extra] => 
+        )
+
+    [12] => stdClass Object
+        (
+            [Field] => shareable_id
+            [Type] => varchar(191)
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [13] => stdClass Object
+        (
+            [Field] => registration_completed_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [14] => stdClass Object
+        (
+            [Field] => created_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+    [15] => stdClass Object
+        (
+            [Field] => updated_at
+            [Type] => timestamp
+            [Null] => YES
+            [Key] => 
+            [Default] => 
+            [Extra] => 
+        )
+
+)
