@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,16 @@ class AppServiceProvider extends ServiceProvider
     {
         // Fix for MySQL "key too long" error
         Schema::defaultStringLength(191);
+
+        // Railway and similar platforms terminate TLS at a proxy.
+        // Force generated app/asset URLs to HTTPS in production to avoid mixed content.
+        if (
+            app()->environment('production')
+            || request()->header('x-forwarded-proto') === 'https'
+            || str_starts_with((string) config('app.url'), 'https://')
+        ) {
+            URL::forceScheme('https');
+        }
 
         // Register Mailtrap Transport Bridge
         try {
