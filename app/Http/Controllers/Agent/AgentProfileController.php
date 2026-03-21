@@ -69,23 +69,32 @@ class AgentProfileController extends Controller
         $isOwner = auth()->check() && auth()->user()->agent && auth()->user()->agent->id == $agent->id;
 
         if (!$isOwner) {
-            $sessionKey = 'agent_profile_viewed_' . $agent->id;
-            $lastViewedAt = session($sessionKey);
-            $cooldownSeconds = 30 * 60;
+            try {
+                $sessionKey = 'agent_profile_viewed_' . $agent->id;
+                $lastViewedAt = session($sessionKey);
+                $cooldownSeconds = 30 * 60;
 
-            if (!$lastViewedAt || (time() - (int) $lastViewedAt) > $cooldownSeconds) {
-                $profileView = AgentProfileView::firstOrCreate(
-                    [
-                        'agent_id' => $agent->id,
-                        'view_date' => now()->toDateString(),
-                    ],
-                    [
-                        'view_count' => 0,
-                    ]
-                );
-                $profileView->increment('view_count');
+                if (!$lastViewedAt || (time() - (int) $lastViewedAt) > $cooldownSeconds) {
+                    $profileView = AgentProfileView::firstOrCreate(
+                        [
+                            'agent_id' => $agent->id,
+                            'view_date' => now()->toDateString(),
+                        ],
+                        [
+                            'view_count' => 0,
+                        ]
+                    );
+                    $profileView->increment('view_count');
 
-                session([$sessionKey => time()]);
+                    session([$sessionKey => time()]);
+                }
+            } catch (\Throwable $e) {
+                // Do not block public profile rendering if analytics persistence fails.
+                Log::warning('Profile view tracking failed', [
+                    'agent_id' => $agent->id,
+                    'slug' => $slug,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

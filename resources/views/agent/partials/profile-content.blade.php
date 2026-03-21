@@ -4,6 +4,8 @@
     $leadPreferences = $agent->leadPreferences;
     $socialLinks = is_array($profile?->social_links) ? $profile->social_links : [];
     $reviewSlug = $profile?->slug ?: $agent->id;
+    $agentDisplayName = trim((string) ($profile?->display_name ?: $agent->fullname ?: 'Agent'));
+    $agentInitial = strtoupper(substr($agentDisplayName, 0, 1));
 @endphp
 
 <div class="profile-main-card mb-4">
@@ -12,10 +14,10 @@
             <div class="profile-img-container">
                 <div class="profile-img-wrapper">
                     @if($profile && $profile->profile_photo_path)
-                        <img src="{{ $profile->profile_photo_url }}" alt="{{ $agent->fullname }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\"d-flex align-items-center justify-content-center h-100 bg-secondary text-white\" style=\"font-size: 48px;\">{{ strtoupper(substr($agent->fullname, 0, 1)) }}</div>';">
+                        <img src="{{ $profile->profile_photo_url }}" alt="{{ $agentDisplayName }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\"d-flex align-items-center justify-content-center h-100 bg-secondary text-white\" style=\"font-size: 48px;\">{{ $agentInitial }}</div>';">
                     @else
                         <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white" style="font-size: 48px;">
-                            {{ strtoupper(substr($agent->fullname, 0, 1)) }}
+                            {{ $agentInitial }}
                         </div>
                     @endif
                 </div>
@@ -44,7 +46,9 @@
 
             <div class="action-btns">
                 @php
-                    $whatsappUrl = "https://wa.me/" . preg_replace('/[^0-9]/', '', $profile?->whatsapp ?? $agent->mobile);
+                    $whatsappSource = (string) ($profile?->whatsapp ?? $agent->mobile ?? '');
+                    $whatsappDigits = preg_replace('/[^0-9]/', '', $whatsappSource) ?: '';
+                    $whatsappUrl = $whatsappDigits !== '' ? ('https://wa.me/' . $whatsappDigits) : '#';
                 @endphp
                 <a href="{{ auth()->check() ? $whatsappUrl : '#' }}" target="_blank" class="btn btn-whatsapp {{ auth()->check() ? '' : 'guest-requires-info' }}" data-url-direct="{{ $whatsappUrl }}">
                     <i class="fab fa-whatsapp"></i> WhatsApp
@@ -80,10 +84,15 @@
                     <span class="badge-verified-txt"><i class="fas fa-check-circle mr-1"></i> Verified</span>
                     @php
                         $rawPlan = $agent->activeSubscription?->selected_plan ?? '';
-                        $decodedPlan = json_decode($rawPlan, true);
-                        $planLabel = (json_last_error() === JSON_ERROR_NONE && is_array($decodedPlan) && isset($decodedPlan['name']))
-                            ? $decodedPlan['name']
-                            : (string) $rawPlan;
+                        $decodedPlan = null;
+                        if (is_string($rawPlan) && $rawPlan !== '') {
+                            $decodedPlan = json_decode($rawPlan, true);
+                        } elseif (is_array($rawPlan)) {
+                            $decodedPlan = $rawPlan;
+                        }
+                        $planLabel = (is_array($decodedPlan) && isset($decodedPlan['name']))
+                            ? (string) $decodedPlan['name']
+                            : (is_scalar($rawPlan) ? (string) $rawPlan : '');
                         $isTrusted = stripos($planLabel, 'professional') !== false;
                         $isApprovedByAdmin = strtolower((string) ($agent->status ?? '')) === 'active';
                     @endphp
@@ -255,7 +264,7 @@
                     <div class="stat-label">Success Rate</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value">₹{{ number_format($performanceStats?->claims_settled ?? 15000000 / 10000000, 1) }} Cr</div>
+                    <div class="stat-value">₹{{ number_format((($performanceStats?->claims_settled ?? 15000000) / 10000000), 1) }} Cr</div>
                     <div class="stat-label">Claims Settled</div>
                 </div>
                 <div class="stat-box">
@@ -401,7 +410,7 @@
                         </div>
                     </div>
                     <p class="review-text">{{ strip_tags($review->review) }}</p>
-                    <div class="review-date">{{ $review->created_at->format('M d, Y') }}</div>
+                    <div class="review-date">{{ optional($review->created_at)->format('M d, Y') ?? 'N/A' }}</div>
                 </div>
                 @empty
                     <p class="text-muted py-4 text-center">No reviews yet. Be the first to review!</p>
