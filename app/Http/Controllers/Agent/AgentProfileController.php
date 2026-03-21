@@ -244,18 +244,34 @@ class AgentProfileController extends Controller
                 ]);
                 
                 if ($request->hasFile('profile_photo')) {
-                    // Delete old photo if it exists
-                    if ($profile->profile_photo_path && Storage::disk('public')->exists($profile->profile_photo_path)) {
+                    // Delete old photo from Cloudinary if it exists
+                    if ($profile->profile_photo_path && str_starts_with($profile->profile_photo_path, 'https://res.cloudinary.com')) {
+                        // Extract public_id from URL and delete from Cloudinary
+                        try {
+                            $urlPath = parse_url($profile->profile_photo_path, PHP_URL_PATH);
+                            $parts = explode('/', $urlPath);
+                            $filename = pathinfo(end($parts), PATHINFO_FILENAME);
+                            $folderIndex = array_search('padosiagent', $parts);
+                            if ($folderIndex !== false) {
+                                $publicId = implode('/', array_slice($parts, $folderIndex, -1)) . '/' . $filename;
+                                cloudinary()->destroy($publicId);
+                            }
+                        } catch (\Throwable $ex) {
+                            Log::warning('Could not delete old Cloudinary photo: ' . $ex->getMessage());
+                        }
+                    } elseif ($profile->profile_photo_path && Storage::disk('public')->exists($profile->profile_photo_path)) {
                         Storage::disk('public')->delete($profile->profile_photo_path);
                     }
-                    
-                    // Store new photo
+
+                    // Upload new photo to Cloudinary
                     $file = $request->file('profile_photo');
-                    // Generate a unique filename to prevent caching issues or conflicts
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $path = $file->storeAs('agent/profiles', $filename, 'public');
-                    
-                    $profile->profile_photo_path = $path;
+                    $uploadResult = cloudinary()->upload($file->getRealPath(), [
+                        'folder'    => 'padosiagent/profiles',
+                        'public_id' => 'agent_' . $agent->id . '_' . time(),
+                        'overwrite' => true,
+                        'resource_type' => 'image',
+                    ]);
+                    $profile->profile_photo_path = $uploadResult->getSecurePath();
                 }
                 
                 $profile->save();
@@ -391,7 +407,22 @@ class AgentProfileController extends Controller
                     foreach ($request->remove_photos as $photoId) {
                         $photo = AgentAchievementPhoto::where('agent_id', $agent->id)->find($photoId);
                         if ($photo) {
-                            Storage::disk('public')->delete($photo->photo_path);
+                            if ($photo->photo_path && str_starts_with($photo->photo_path, 'https://res.cloudinary.com')) {
+                                try {
+                                    $urlPath = parse_url($photo->photo_path, PHP_URL_PATH);
+                                    $parts = explode('/', $urlPath);
+                                    $filename = pathinfo(end($parts), PATHINFO_FILENAME);
+                                    $folderIndex = array_search('padosiagent', $parts);
+                                    if ($folderIndex !== false) {
+                                        $publicId = implode('/', array_slice($parts, $folderIndex, -1)) . '/' . $filename;
+                                        cloudinary()->destroy($publicId);
+                                    }
+                                } catch (\Throwable $ex) {
+                                    Log::warning('Could not delete Cloudinary achievement photo: ' . $ex->getMessage());
+                                }
+                            } else {
+                                Storage::disk('public')->delete($photo->photo_path);
+                            }
                             $photo->delete();
                         }
                     }
@@ -399,8 +430,12 @@ class AgentProfileController extends Controller
 
                 if ($request->hasFile('achievement_photos')) {
                     foreach ($request->file('achievement_photos') as $photoFile) {
-                        $path = $photoFile->store('agent/achievements', 'public');
-                        $agent->achievementPhotos()->create(['photo_path' => $path]);
+                        $uploadResult = cloudinary()->upload($photoFile->getRealPath(), [
+                            'folder'        => 'padosiagent/achievements',
+                            'public_id'     => 'achievement_' . $agent->id . '_' . time() . '_' . uniqid(),
+                            'resource_type' => 'image',
+                        ]);
+                        $agent->achievementPhotos()->create(['photo_path' => $uploadResult->getSecurePath()]);
                     }
                 }
 
