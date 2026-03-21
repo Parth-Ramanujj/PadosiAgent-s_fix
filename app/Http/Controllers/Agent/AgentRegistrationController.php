@@ -105,31 +105,31 @@ class AgentRegistrationController extends Controller
      */
     public function sendOtp(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email'
-        ]);
-
-        $email = $request->email;
-
-        // Check if an active USER account already exists for this email with agent role
-        $existingUser = User::where('email', $email)->where('role', 'agent')->first();
-        if ($existingUser) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This email is already associated with an active Agent account. Please login to access your dashboard.'
-            ], 422);
-        }
-
-        $otp = rand(100000, 999999);
-
-        // Store OTP in session with timestamp
-        session([
-            'email_otp' => $otp,
-            'otp_email' => $email,
-            'otp_expires_at' => now()->addMinutes(10)
-        ]);
-
         try {
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+
+            $email = $request->email;
+
+            // Check if an active USER account already exists for this email with agent role
+            $existingUser = User::where('email', $email)->where('role', 'agent')->first();
+            if ($existingUser) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This email is already associated with an active Agent account. Please login to access your dashboard.'
+                ], 422);
+            }
+
+            $otp = rand(100000, 999999);
+
+            // Store OTP in session with timestamp
+            session([
+                'email_otp' => $otp,
+                'otp_email' => $email,
+                'otp_expires_at' => now()->addMinutes(10)
+            ]);
+
             Mail::to($email)->send(new OtpMail($otp));
             Log::info("OTP sent to $email: $otp");
             
@@ -137,26 +137,41 @@ class AgentRegistrationController extends Controller
                 'success' => true,
                 'message' => 'OTP has been sent to your email address. Please check your inbox.'
             ]);
-        } catch (\Throwable $e) {
-            Log::error('OTP Send Error: ' . $e->getMessage());
-            Log::info("OTP for $email (Email failed): $otp");
-
-            // Dev-safe fallback so registration flow is not blocked by SMTP misconfiguration.
-            $allowFallback = app()->environment('local') || filter_var(env('OTP_ALLOW_FALLBACK', false), FILTER_VALIDATE_BOOL);
-            if ($allowFallback) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Mail service is unavailable, but OTP is generated in debug mode.',
-                    'debug_otp' => (string) $otp,
-                    'mail_failed' => true,
-                ]);
-            }
-            
+        } catch (\Illuminate\Validation\ValidationException $ve) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unable to send OTP right now. Please verify SMTP credentials or try again later.',
-                'mail_failed' => true,
-            ]);
+                'message' => $ve->getMessage(),
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('OTP Send Comprehensive Error: ' . $e->getMessage() . " => " . $e->getTraceAsString());
+            
+            // If it's a Mail error, we might fallback
+            if (str_contains(get_class($e), 'Mail') || str_contains(get_class($e), 'Transport') || str_contains($e->getMessage(), 'Connection could not be established')) {
+                // Dev-safe fallback so registration flow is not blocked by SMTP misconfiguration.
+                $allowFallback = app()->environment('local') || filter_var(env('OTP_ALLOW_FALLBACK', false), FILTER_VALIDATE_BOOL);
+                if ($allowFallback) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Mail service is unavailable, but OTP is generated in debug mode.',
+                        'debug_otp' => (string) ($otp ?? '123456'),
+                        'mail_failed' => true,
+                    ]);
+                }
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unable to send OTP right now. Please verify SMTP credentials or try again later.',
+                    'mail_failed' => true,
+                    'error_detail' => $e->getMessage()
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected server error occurred: ' . $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine()
+            ], 500);
         }
     }
 
