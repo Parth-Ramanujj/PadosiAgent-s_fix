@@ -1,5 +1,21 @@
 <?php
 
+$mailEnv = static function (string $key, $default = null) {
+    $value = env($key, $default);
+
+    if (is_string($value)) {
+        $value = trim($value);
+        $hasDoubleQuotes = strlen($value) >= 2 && $value[0] === '"' && $value[strlen($value) - 1] === '"';
+        $hasSingleQuotes = strlen($value) >= 2 && $value[0] === "'" && $value[strlen($value) - 1] === "'";
+
+        if ($hasDoubleQuotes || $hasSingleQuotes) {
+            $value = substr($value, 1, -1);
+        }
+    }
+
+    return $value;
+};
+
 return [
 
     /*
@@ -14,7 +30,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'mailtrap'),
+    'default' => $mailEnv('MAIL_MAILER', 'smtp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,14 +55,14 @@ return [
 
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME'),
-            'url' => env('MAIL_URL'),
-            'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 2525),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            'scheme' => $mailEnv('MAIL_SCHEME'),
+            'url' => $mailEnv('MAIL_URL'),
+            'host' => $mailEnv('MAIL_HOST', '127.0.0.1'),
+            'port' => (int) $mailEnv('MAIL_PORT', 587),
+            'username' => $mailEnv('MAIL_USERNAME'),
+            'password' => $mailEnv('MAIL_PASSWORD'),
+            'timeout' => (int) $mailEnv('MAIL_TIMEOUT', 12),
+            'local_domain' => $mailEnv('MAIL_EHLO_DOMAIN', parse_url((string) $mailEnv('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
         'mailtrap' => [
@@ -116,8 +132,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => $mailEnv('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => $mailEnv('MAIL_FROM_NAME', 'Example'),
     ],
 
 ];

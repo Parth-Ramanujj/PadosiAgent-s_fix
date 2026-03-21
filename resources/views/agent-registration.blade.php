@@ -531,12 +531,16 @@
 
         const btn = document.getElementById('sendOtpBtn');
         const originalText = btn.textContent;
+        let keepDisabledForTimer = false;
+        const controller = new AbortController();
+        const requestTimeout = setTimeout(() => controller.abort(), 15000);
         btn.disabled = true;
         btn.textContent = 'Sending...';
 
         try {
             const response = await fetch('{{ route("agent.send.otp") }}', {
                 method: 'POST',
+                signal: controller.signal,
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
@@ -564,6 +568,7 @@
                 let timeLeft = 60;
                 const timerDiv = document.getElementById('otpTimer');
                 btn.disabled = true;
+                keepDisabledForTimer = true;
                 
                 const timerInterval = setInterval(() => {
                     if (timeLeft <= 0) {
@@ -581,9 +586,19 @@
                 btn.textContent = originalText;
             }
         } catch (error) {
-            showAlert('Network error. Please try again.', 'error');
-            btn.disabled = false;
-            btn.textContent = originalText;
+            if (error.name === 'AbortError') {
+                showAlert('OTP service timed out. Please try again.', 'error');
+            } else {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        } finally {
+            clearTimeout(requestTimeout);
+            if (!keepDisabledForTimer) {
+                btn.disabled = false;
+                if (btn.textContent === 'Sending...') {
+                    btn.textContent = originalText;
+                }
+            }
         }
     }
 
