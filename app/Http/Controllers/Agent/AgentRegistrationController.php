@@ -1183,7 +1183,7 @@ public function completeRegistration(Request $request)
         // 1. Basic Validation (only trust the plan identifier)
         $request->validate([
             'plan_type' => 'required|in:basic,professional',
-            'plan_name' => 'required|string',
+            'plan_name' => 'nullable|string',
         ]);
 
         // 2. SERVER-SIDE PRICE DEFINITION (Overrides any values from frontend)
@@ -1204,6 +1204,9 @@ public function completeRegistration(Request $request)
         // Retrieve the verified price
         $planType = $request->plan_type;
         $planName = $request->plan_name;
+        if (empty($planName)) {
+            $planName = $planType === 'basic' ? "Starter's Plan" : "Professional's Plan";
+        }
         $totalAmount = $pricing[$planType][$hasPromo ? 'promo' : 'standard'] ?? 2359;
 
         // 3. Reverse calculate base amount (to keep GST logs consistent)
@@ -1242,13 +1245,28 @@ public function completeRegistration(Request $request)
             }
         }
 
+        // If already paid, avoid duplicate payment order creation on retries.
+        $alreadyPaid = AgentSubscription::where('agent_id', $agent->id)
+            ->where('payment_status', 'completed')
+            ->first();
+
+        if ($alreadyPaid) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration already completed for this account.',
+                'already_completed' => true,
+                'agent_id' => $agent->id,
+            ]);
+        }
+
         // Update/Create Agent Subscription record
         $subscription = AgentSubscription::updateOrCreate(
-            ['agent_id' => $agent->id, 'payment_status' => 'pending'],
+            ['agent_id' => $agent->id],
             [
                 'selected_plan' => $planName,
                 'registration_amount' => $totalAmount, // Verified positive amount
                 'razorpay_order_id' => $razorpayOrder['id'] ?? null,
+                'payment_status' => 'pending',
                 'status' => 'inactive'
             ]
         );
@@ -1288,9 +1306,19 @@ public function completeRegistration(Request $request)
                 'agent_id' => $agent->id
             ]);
         }
-    } catch (\Exception $e) {
-        Log::error('Registration Error: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => 'Server error occurred.'], 500);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::warning('COMPLETE REGISTRATION - Validation Error', ['errors' => $e->errors()]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Please select a valid plan and try again.',
+            'errors' => $e->errors(),
+        ], 422);
+    } catch (\Throwable $e) {
+        Log::error('Registration Error: ' . $e->getMessage(), [
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+        return response()->json(['success' => false, 'message' => 'Server error occurred while preparing payment.'], 500);
     }
 }
 
