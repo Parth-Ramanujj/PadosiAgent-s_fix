@@ -14,7 +14,7 @@
             <div class="profile-img-container">
                 <div class="profile-img-wrapper">
                     @if($profile && $profile->profile_photo_url)
-                        <img src="{{ $profile->profile_photo_url }}?v={{ $profile->updated_at?->timestamp ?? time() }}" alt="{{ $agentDisplayName }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\"d-flex align-items-center justify-content-center h-100 bg-secondary text-white\" style=\"font-size: 48px;\">{{ $agentInitial }}</div>';">
+                        <img src="{{ $profile->profile_photo_url }}?v={{ $profile->updated_at?->timestamp ?? time() }}" alt="{{ $agentDisplayName }}" onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}';">
                     @else
                         <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white" style="font-size: 48px;">
                             {{ $agentInitial }}

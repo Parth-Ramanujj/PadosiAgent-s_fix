@@ -407,71 +407,119 @@
             // Define the popup function globally
             window.showQuickRegisterPopup = function() {
                 Swal.fire({
-                    title: '<h3 style="color: #0d9488; margin-top: 10px;">Find Best Agents Nearby</h3>',
+                    title: '<h2 style="font-size:22px;font-weight:700;color:#1a1a1a;margin-top:8px;">Welcome to PadosiAgent! 👋</h2>',
                     html: `
-                        <div class="text-left" style="padding: 0 10px;">
-                            <div id="swal-error-container" class="alert alert-danger d-none" style="font-size: 13px; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: none; background-color: #fef2f2; color: #991b1b;">
+                        <div class="text-left" style="padding: 0 4px;">
+                            <p style="color:#64748b;font-size:14px;text-align:center;margin-bottom:6px;">Help us connect you with the best agents in your area</p>
+                            <p style="color:#2563eb;font-size:13px;font-style:italic;text-align:center;margin-bottom:20px;">&ldquo;Agents can serve you better when they are your Padosi&rdquo;</p>
+
+                            <div id="swal-error-container" class="alert alert-danger d-none" style="font-size:13px;padding:10px;border-radius:8px;margin-bottom:15px;border:none;background-color:#fef2f2;color:#991b1b;">
                                 <i class="fas fa-exclamation-circle mr-2"></i> <span id="swal-error-message"></span>
                             </div>
 
-                            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Please share a few details to help us connect you with the right experts.</p>
-                            
                             <div class="form-group mb-3">
-                                <label style="font-size: 13px; font-weight: 600; color: #475569;">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" id="swal-fullname" class="form-control" placeholder="Enter your full name" style="border-radius: 8px; padding: 12px;">
+                                <label style="font-size:13px;font-weight:600;color:#1a1a1a;"><i class="fas fa-user mr-1" style="color:#64748b;"></i> Name <span class="text-danger">*</span></label>
+                                <input type="text" id="swal-fullname" class="form-control" placeholder="Enter your full name" style="border-radius:10px;padding:12px 14px;border:1.5px solid #e2e8f0;font-size:14px;">
                             </div>
-                            
+
                             <div class="form-group mb-3">
-                                <label style="font-size: 13px; font-weight: 600; color: #475569;">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" id="swal-email" class="form-control" placeholder="name@example.com" style="border-radius: 8px; padding: 12px;">
+                                <label style="font-size:13px;font-weight:600;color:#1a1a1a;"><i class="fas fa-envelope mr-1" style="color:#64748b;"></i> Email <span class="text-danger">*</span></label>
+                                <input type="email" id="swal-email" class="form-control" placeholder="your.email@example.com" style="border-radius:10px;padding:12px 14px;border:1.5px solid #e2e8f0;font-size:14px;">
                             </div>
-                            
+
                             <div class="form-group mb-3">
-                                <label style="font-size: 13px; font-weight: 600; color: #475569;">Mobile Number</label>
-                                <input type="text" id="swal-mobile" class="form-control" placeholder="10-digit mobile number" maxlength="10" 
+                                <label style="font-size:13px;font-weight:600;color:#1a1a1a;"><i class="fas fa-phone mr-1" style="color:#64748b;"></i> Mobile Number <span class="text-danger">*</span></label>
+                                <input type="text" id="swal-mobile" class="form-control" placeholder="+91 98765 43210" maxlength="10"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                    style="border-radius: 8px; padding: 12px;">
+                                    style="border-radius:10px;padding:12px 14px;border:1.5px solid #e2e8f0;font-size:14px;">
                             </div>
-                            
+
                             <div class="form-group mb-3">
-                                <label style="font-size: 13px; font-weight: 600; color: #475569;">Pincode <span class="text-danger">*</span></label>
-                                <input type="text" id="swal-pincode" class="form-control" placeholder="Where are you looking for an agent?" maxlength="6" 
+                                <label style="font-size:13px;font-weight:600;color:#1a1a1a;"><i class="fas fa-map-marker-alt mr-1" style="color:#64748b;"></i> Location <span class="text-danger">*</span></label>
+                                <p style="font-size:12px;color:#64748b;font-style:italic;margin-bottom:8px;">&ldquo;Agents can serve you better when they are your Padosi&rdquo;</p>
+                                <div style="display:flex;gap:10px;margin-bottom:10px;">
+                                    <button type="button" id="swal-tab-pincode" onclick="window.swalSwitchTab('pincode')" style="flex:1;padding:10px;border-radius:10px;border:none;background:#2563eb;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
+                                        <i class="fas fa-map-pin mr-1"></i> Pincode
+                                    </button>
+                                    <button type="button" id="swal-tab-location" onclick="window.swalSwitchTab('location')" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer;">
+                                        <i class="fas fa-location-arrow mr-1"></i> Use Location
+                                    </button>
+                                </div>
+                                <input type="text" id="swal-pincode" class="form-control" placeholder="Enter your pincode" maxlength="6"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                    style="border-radius: 8px; padding: 12px;">
+                                    style="border-radius:10px;padding:12px 14px;border:1.5px solid #e2e8f0;font-size:14px;">
+                                <input type="hidden" id="swal-lat" value="">
+                                <input type="hidden" id="swal-lng" value="">
+                                <small id="swal-location-status" style="color:#64748b;font-size:12px;"></small>
                             </div>
                         </div>
                     `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Show Agents',
-                    confirmButtonColor: '#0d9488',
-                    cancelButtonText: 'Cancel',
+                    showCancelButton: false,
+                    confirmButtonText: 'Get Started',
+                    confirmButtonColor: '#2563eb',
                     padding: '2rem',
-                    width: '450px',
+                    width: '460px',
+                    didOpen: () => {
+                        window.swalLocationMode = 'pincode';
+                        window.swalSwitchTab = function(mode) {
+                            window.swalLocationMode = mode;
+                            if (mode === 'pincode') {
+                                $('#swal-tab-pincode').css({background:'#2563eb',color:'#fff',border:'none'});
+                                $('#swal-tab-location').css({background:'#fff',color:'#1a1a1a',border:'1.5px solid #e2e8f0'});
+                                $('#swal-pincode').show().prop('disabled', false);
+                                $('#swal-location-status').text('');
+                                $('#swal-lat').val(''); $('#swal-lng').val('');
+                            } else {
+                                $('#swal-tab-location').css({background:'#2563eb',color:'#fff',border:'none'});
+                                $('#swal-tab-pincode').css({background:'#fff',color:'#1a1a1a',border:'1.5px solid #e2e8f0'});
+                                $('#swal-pincode').hide().prop('disabled', true);
+                                $('#swal-location-status').text('Detecting location...');
+                                if (navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(function(pos) {
+                                        $('#swal-lat').val(pos.coords.latitude);
+                                        $('#swal-lng').val(pos.coords.longitude);
+                                        $('#swal-location-status').html('<span style="color:#16a34a;"><i class="fas fa-check-circle mr-1"></i>Location detected!</span>');
+                                    }, function() {
+                                        $('#swal-location-status').html('<span style="color:#dc2626;">Could not get location. Please use pincode.</span>');
+                                        window.swalSwitchTab('pincode');
+                                    });
+                                } else {
+                                    $('#swal-location-status').html('<span style="color:#dc2626;">Geolocation not supported. Use pincode.</span>');
+                                    window.swalSwitchTab('pincode');
+                                }
+                            }
+                        };
+                    },
                     preConfirm: () => {
                         const fullname = $('#swal-fullname').val().trim();
                         const email = $('#swal-email').val().trim();
                         const mobile = $('#swal-mobile').val().trim();
                         const pincode = $('#swal-pincode').val().trim();
+                        const lat = $('#swal-lat').val();
+                        const lng = $('#swal-lng').val();
+                        const mode = window.swalLocationMode || 'pincode';
 
                         const showError = (msg) => {
                             $('#swal-error-message').text(msg);
                             $('#swal-error-container').removeClass('d-none').hide().fadeIn();
                             setTimeout(() => {
-                                $('#swal-error-container').fadeOut(() => {
-                                    $(this).addClass('d-none');
-                                });
+                                $('#swal-error-container').fadeOut();
                             }, 3000);
                         };
 
                         $('#swal-error-container').addClass('d-none');
 
-                        if (!fullname) { showError('Full Name is required'); return false; }
-                        if (!email) { showError('Email Address is required'); return false; }
+                        if (!fullname) { showError('Name is required'); return false; }
+                        if (!email) { showError('Email is required'); return false; }
                         if (!/^\S+@\S+\.\S+$/.test(email)) { showError('Please enter a valid email address'); return false; }
-                        if (!pincode) { showError('Pincode is required'); return false; }
-                        if (pincode.length < 6) { showError('Please enter a valid 6-digit pincode'); return false; }
+                        if (!mobile || mobile.length < 10) { showError('Please enter a valid 10-digit mobile number'); return false; }
+                        if (mode === 'pincode') {
+                            if (!pincode || pincode.length < 6) { showError('Please enter a valid 6-digit pincode'); return false; }
+                        } else {
+                            if (!lat || !lng) { showError('Location not detected. Please use pincode.'); return false; }
+                        }
 
-                        return { fullname, email, mobile, pincode };
+                        return { fullname, email, mobile, pincode, lat, lng };
                     },
                     allowOutsideClick: false,
                     allowEscapeKey: false,
@@ -517,9 +565,6 @@
                                 });
                             }
                         });
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
-                        // Redirect to home page when user clicks Cancel
-                        window.location.href = "{{ url('/') }}";
                     }
                 });
             };

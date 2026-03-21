@@ -1033,47 +1033,71 @@
         @if(($shouldGateGuest ?? false) === true)
         // Auto-show popup for guests
         if (Swal.isVisible() || $('#logout-form').length || $('#userMenu').length) return;
-        Swal.fire({
-            title: '<h3 style="color: #0d9488; margin-top: 10px;">Find Best Agents Nearby</h3>',
-            html: `
-                <div class="text-left" style="padding: 0 10px;">
-                    <div id="swal-error-container" class="alert alert-danger d-none" style="font-size: 13px; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: none; background-color: #fef2f2; color: #991b1b;">
-                        <i class="fas fa-exclamation-circle mr-2"></i> <span id="swal-error-message"></span>
-                    </div>
+        
+        let welcomeHtml = `
+            <div class="swal-welcome-content text-center" style="font-family: 'Urbanist', sans-serif;">
+                <p style="color: #64748b; font-size: 16px; margin-bottom: 10px;">Help us connect you with the best agents in your area</p>
+                
+                <p style="color: #0d6efd; font-style: italic; font-weight: 600; font-size: 14px; margin-bottom: 25px;">
+                    "Agents can serve you better when they are your Padosi"
+                </p>
 
-                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Please share a few details to help us connect you with the right experts.</p>
-                    
-                    <div class="form-group mb-3">
-                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Full Name <span class="text-danger">*</span></label>
-                        <input type="text" id="swal-fullname" class="form-control" placeholder="Enter your full name" style="border-radius: 8px; padding: 12px;">
-                    </div>
-                    
-                    <div class="form-group mb-3">
-                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Email Address <span class="text-danger">*</span></label>
-                        <input type="email" id="swal-email" class="form-control" placeholder="name@example.com" style="border-radius: 8px; padding: 12px;">
-                    </div>
-                    
-                    <div class="form-group mb-3">
-                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Mobile Number</label>
-                        <input type="text" id="swal-mobile" class="form-control" placeholder="10-digit mobile number" maxlength="10" 
+                <div id="swal-error-container" class="alert alert-danger d-none" style="font-size: 13px; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: none; background-color: #fef2f2; color: #991b1b; text-align: left;">
+                    <i class="fas fa-exclamation-circle mr-2"></i> <span id="swal-error-message"></span>
+                </div>
+
+                <div class="form-group mb-3 text-left">
+                    <label style="font-size: 14px; font-weight: 600; color: #334155; display: block; margin-bottom: 5px;">
+                        <i class="far fa-user mr-2"></i> Name *
+                    </label>
+                    <input type="text" id="swal-fullname" class="form-control" placeholder="Enter your full name" 
+                        style="border-radius: 12px; padding: 12px; border: 1px solid #e2e8f0; width: 100%;">
+                </div>
+                
+                <div class="form-group mb-3 text-left">
+                    <label style="font-size: 14px; font-weight: 600; color: #334155; display: block; margin-bottom: 5px;">
+                        <i class="far fa-envelope mr-2"></i> Email *
+                    </label>
+                    <input type="email" id="swal-email" class="form-control" placeholder="your.email@example.com" 
+                        style="border-radius: 12px; padding: 12px; border: 1px solid #e2e8f0; width: 100%;">
+                </div>
+                
+                <div class="form-group mb-3 text-left">
+                    <label style="font-size: 14px; font-weight: 600; color: #334155; display: block; margin-bottom: 5px;">
+                        <i class="fas fa-phone-alt mr-2"></i> Mobile Number *
+                    </label>
+                    <div style="display: flex; gap: 0;">
+                        <span style="background: #f8fafc; border: 1px solid #e2e8f0; border-right: none; border-radius: 12px 0 0 12px; padding: 12px; color: #64748b; font-weight: 600;">+91</span>
+                        <input type="text" id="swal-mobile" class="form-control" placeholder="98765 43210" maxlength="10" 
                             oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                            style="border-radius: 8px; padding: 12px;">
-                    </div>
-                    
-                    <div class="form-group mb-3">
-                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Pincode <span class="text-danger">*</span></label>
-                        <input type="text" id="swal-pincode" class="form-control" placeholder="Where are you looking for an agent?" maxlength="6" 
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                            style="border-radius: 8px; padding: 12px;">
+                            style="border-radius: 0 12px 12px 0; padding: 12px; border: 1px solid #e2e8f0; flex: 1; width: 100%;">
                     </div>
                 </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Show Agents',
-            confirmButtonColor: '#0d9488',
-            cancelButtonText: 'Back to Home',
+                
+                <div class="form-group mb-4 text-left">
+                    <label style="font-size: 14px; font-weight: 600; color: #334155; display: block; margin-bottom: 5px;">
+                        <i class="fas fa-map-marker-alt mr-2"></i> Location *
+                    </label>
+                    <input type="text" id="swal-pincode" class="form-control" placeholder="Enter your pincode" maxlength="6" 
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        style="border-radius: 12px; padding: 12px; border: 1px solid #e2e8f0; width: 100%;">
+                </div>
+            </div>
+        `;
+
+        Swal.fire({
+            title: '<h3 style="font-weight: 800; color: #1e293b; margin-top: 10px; font-size: 24px;">Welcome to PadosiAgent! 👋</h3>',
+            html: welcomeHtml,
+            showCancelButton: false,
+            confirmButtonText: 'Get Started',
+            confirmButtonColor: '#007bff',
             padding: '2rem',
-            width: '450px',
+            width: '500px',
+            customClass: {
+                confirmButton: 'btn btn-primary btn-lg rounded-pill px-5 w-100',
+                title: 'p-0 mb-2'
+            },
+            buttonsStyling: false,
             preConfirm: () => {
                 const fullname = $('#swal-fullname').val().trim();
                 const email = $('#swal-email').val().trim();
@@ -1095,6 +1119,8 @@
                 if (!fullname) { showError('Full Name is required'); return false; }
                 if (!email) { showError('Email Address is required'); return false; }
                 if (!/^\S+@\S+\.\S+$/.test(email)) { showError('Please enter a valid email address'); return false; }
+                if (!mobile) { showError('Mobile Number is required'); return false; }
+                if (mobile.length < 10) { showError('Please enter a valid 10-digit mobile number'); return false; }
                 if (!pincode) { showError('Pincode is required'); return false; }
                 if (pincode.length < 6) { showError('Please enter a valid 6-digit pincode'); return false; }
 
@@ -1144,8 +1170,6 @@
                         });
                     }
                 });
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-               window.location.href = "{{ url('/') }}";
             }
         });
         @endif

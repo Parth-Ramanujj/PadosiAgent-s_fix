@@ -14,7 +14,7 @@
     @endphp
     <div class="pic-block">
         <figure class="find-agents-list-item-pic dark-blue-bg-pic">
-            <img src="{{ $agent->profile?->profile_photo_url ?? asset('img/avatar-icon.jpg') }}" 
+            <img src="{{ $agent->profile?->profile_photo_url ?? asset('img/avatar-icon.jpg') }}?v={{ $agent->profile?->updated_at?->timestamp ?? time() }}" 
                  alt="{{ $displayName }}" 
                  class="img-fluid"
                  onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}';">
