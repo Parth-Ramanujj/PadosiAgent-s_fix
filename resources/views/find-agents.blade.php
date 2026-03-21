@@ -99,6 +99,12 @@
                         </div>
 
                         <div class="find-agents-list">
+                            @if(($shouldGateGuest ?? false) === true)
+                            <div class="no-agents-found p-4" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; margin-top: 20px;">
+                                <h3 style="color: #0f5634; font-size: 20px; font-weight: 600; margin-bottom: 15px;">Complete Your Details to View Agents</h3>
+                                <p style="font-size: 15px; color: #495057; margin-bottom: 0;">Please complete the form popup to see the best matching agents in your area.</p>
+                            </div>
+                            @else
                             <!-- Title -->
                             @if(!(request('ServiceType') == 'Claim Assistance' && !request()->filled('InsuranceCompany')))
                             <div class="find-agents-list-title mb-2">
@@ -147,6 +153,7 @@
                                     @endif
                                 </div>
                             </div>
+                            @endif
                             @endif
                         </div>
 
@@ -1078,7 +1085,7 @@
         updateInsuranceTypes();
         updateInsuranceCompanyDropdown();
 
-        @guest
+        @if(($shouldGateGuest ?? false) === true)
         // Auto-show popup for guests
         if (Swal.isVisible() || $('#logout-form').length || $('#userMenu').length) return;
         Swal.fire({
@@ -1162,6 +1169,7 @@
                         $.ajax({
                             url: "{{ route('client.quick-register') }}",
                             type: "POST",
+                            timeout: 15000,
                             data: {
                                 _token: "{{ csrf_token() }}",
                                 ...result.value
@@ -1171,11 +1179,10 @@
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Welcome!',
-                                        text: 'We found the top 5 agents in your neighborhood.',
+                                        text: 'We found matching agents for you.',
                                         timer: 3000,
                                         showConfirmButton: false,
-                                        padding: '2rem',
-                                        borderRadius: '15px'
+                                        padding: '2rem'
                                     }).then(() => {
                                         window.location.href = response.redirect;
                                     });
@@ -1184,17 +1191,19 @@
                                 }
                             },
                             error: function(xhr) {
-                                const message = xhr.responseJSON ? xhr.responseJSON.message : 'An error occurred';
+                                const message = xhr.status === 0
+                                    ? 'Request timed out. Please check your internet and try again.'
+                                    : (xhr.responseJSON ? xhr.responseJSON.message : 'An error occurred');
                                 Swal.fire('Error', message, 'error');
                             }
                         });
                     }
                 });
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-               htmx.ajax('GET', "{{ url('/') }}", {target: '#app-content', select: '#app-content'});
+               window.location.href = "{{ url('/') }}";
             }
         });
-        @endguest
+        @endif
 
         // Agent Comparison Logic
         let selectedCompareAgents = JSON.parse(localStorage.getItem('selectedCompareAgents')) || [];

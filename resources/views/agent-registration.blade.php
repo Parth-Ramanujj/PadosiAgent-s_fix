@@ -303,7 +303,7 @@
                         <div id="successAlert" class="alert alert-success mt-3" style="display: none;"></div>
                         <div id="errorAlert" class="alert alert-danger mt-3" style="display: none;"></div>
 
-                        <form id="agentForm1" action="{{ route('agent.register.step1') }}" method="POST">
+                        <form id="agentForm1" action="{{ route('agent.register.step1') }}" method="POST" hx-boost="false" data-hx-boost="false" hx-disable>
                             @csrf
                             <input type="hidden" name="user_types[]" value="insurance_agent">
                             <h2>Basic Information</h2>
@@ -545,13 +545,20 @@
                 body: JSON.stringify({ email: email })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({
+                success: false,
+                message: 'Unexpected server response while sending OTP.'
+            }));
 
             if (response.ok && data.success) {
                 btn.textContent = 'Resend';
                 btn.disabled = false;
                 document.getElementById('otpSection').style.display = 'block';
-                showAlert(data.message, 'success');
+                if (data.debug_otp) {
+                    showAlert(`${data.message}<br><strong>Debug OTP:</strong> ${data.debug_otp}`, 'success');
+                } else {
+                    showAlert(data.message, 'success');
+                }
                 
                 // Start a timer for resend
                 let timeLeft = 60;

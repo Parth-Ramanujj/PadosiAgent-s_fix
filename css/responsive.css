@@ -555,6 +555,66 @@ button:focus {outline: none;}
 .navbar-nav .drop-down-pages .nav-item:last-child a:hover {border-radius: 0;}
 .navbar-nav .drop-down-pages .active:last-child > a {border-radius: 0;}
 .header .contact_us{display: none;}
+
+/* Mobile nav restyle to match compact menu reference */
+.navbar-collapse.mobile-nav-collapse {
+    left: 12px;
+    right: 12px;
+    width: calc(100% - 24px);
+    top: 74px;
+    border-radius: 0;
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.navbar-collapse.mobile-nav-collapse .navbar-nav {
+    background: #ffffff;
+}
+
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item:last-child {
+    border-bottom: 0;
+}
+
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item a,
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item button.nav-link {
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+    font-weight: 500;
+    color: #1f2937 !important;
+    padding: 18px 34px !important;
+    background: #ffffff;
+    border-radius: 0 !important;
+    border: 0;
+}
+
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item a i,
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item button.nav-link i {
+    display: none !important;
+}
+
+.navbar-collapse.mobile-nav-collapse .navbar-nav .active > a,
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item a:hover,
+.navbar-collapse.mobile-nav-collapse .navbar-nav .nav-item button.nav-link:hover {
+    background: #0f6238 !important;
+    color: #ffffff !important;
+}
+
+.mobile-find-brand {
+    font-weight: 700;
+}
+
+.mobile-find-brand .brand-padosi {
+    color: #273c8e;
+}
+
+.mobile-find-brand .brand-agent {
+    color: #0f6238;
+}
 .banner-con::after {width: 100%; opacity: 20%; background-position: center;}
 .banner-con .banner_content {width: 100%; padding: 60px 65px; text-align: center; position: relative; z-index: 1;}
 .banner-con .banner_content h5 {font-size: 14px; line-height: 22px; padding-left: 0; margin-bottom: 4px;}

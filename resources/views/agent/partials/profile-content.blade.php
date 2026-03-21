@@ -313,7 +313,7 @@
             <div class="media-grid">
                 @forelse($agent->achievementPhotos as $photo)
                     <div class="media-item">
-                        <img src="{{ $photo->photo_url }}" alt="Achievement" loading="lazy">
+                           <img src="{{ $photo->photo_url }}" alt="Achievement" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}';">
                     </div>
                 @empty
                     <div class="col-12 text-center py-4 bg-light rounded text-muted">

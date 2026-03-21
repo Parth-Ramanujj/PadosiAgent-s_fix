@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Agent extends Model
 {
@@ -37,8 +38,11 @@ class Agent extends Model
     protected static function booted()
     {
         static::saved(function ($agent) {
+            $canSyncUserTypes = self::hasRequiredTables(['agent_user_type', 'user_types']);
+            $canSyncInsuranceCompanies = self::hasRequiredTables(['agent_insurance_company', 'insurance_companies']);
+
             // Dual-Writing Sync for User Types
-            if ($agent->wasChanged('user_types') || empty(DB::table('agent_user_type')->where('agent_id', $agent->id)->count())) {
+            if ($canSyncUserTypes && ($agent->wasChanged('user_types') || empty(DB::table('agent_user_type')->where('agent_id', $agent->id)->count()))) {
                 $types = is_array($agent->user_types) ? $agent->user_types : (json_decode($agent->user_types, true) ?? []);
                 $typeIds = [];
                 foreach ($types as $typeSlug) {
@@ -53,7 +57,7 @@ class Agent extends Model
             }
 
             // Dual-Writing Sync for Insurance Companies
-            if ($agent->wasChanged('insurance_companies') || empty(DB::table('agent_insurance_company')->where('agent_id', $agent->id)->count())) {
+            if ($canSyncInsuranceCompanies && ($agent->wasChanged('insurance_companies') || empty(DB::table('agent_insurance_company')->where('agent_id', $agent->id)->count()))) {
                 $companies = is_array($agent->insurance_companies) ? $agent->insurance_companies : (json_decode($agent->insurance_companies, true) ?? []);
                 $companyIds = [];
                 foreach ($companies as $compName) {
@@ -67,6 +71,21 @@ class Agent extends Model
                 $agent->insuranceCompanies()->sync($companyIds);
             }
         });
+    }
+
+    protected static function hasRequiredTables(array $tables): bool
+    {
+        try {
+            foreach ($tables as $table) {
+                if (!Schema::hasTable($table)) {
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     public function user()

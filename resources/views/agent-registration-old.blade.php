@@ -346,7 +346,7 @@
                     <div class="step">3</div>
                 </div>
 
-                <form id="agentForm1">
+                <form id="agentForm1" action="{{ route('agent.register.step1') }}" method="POST" hx-boost="false" data-hx-boost="false" hx-disable>
                     @csrf
                     <div class="form-group">
                         <label>Full Name *</label>

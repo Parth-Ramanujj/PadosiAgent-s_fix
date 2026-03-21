@@ -41,7 +41,16 @@ class AgentRegistrationController extends Controller
         }
 
         if (!$shouldKeepSession) {
-            session()->forget(['current_agent_id', 'google_user', 'applied_promo_code']);
+            session()->forget([
+                'current_agent_id',
+                'google_user',
+                'applied_promo_code',
+                'email_verified',
+                'verified_email',
+                'email_otp',
+                'otp_email',
+                'otp_expires_at',
+            ]);
         }
 
         $agent = null;
@@ -128,14 +137,26 @@ class AgentRegistrationController extends Controller
                 'success' => true,
                 'message' => 'OTP has been sent to your email address. Please check your inbox.'
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('OTP Send Error: ' . $e->getMessage());
             Log::info("OTP for $email (Email failed): $otp");
+
+            // Dev-safe fallback so registration flow is not blocked by SMTP misconfiguration.
+            $allowFallback = app()->environment('local') || filter_var(env('OTP_ALLOW_FALLBACK', false), FILTER_VALIDATE_BOOL);
+            if ($allowFallback) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Mail service is unavailable, but OTP is generated in debug mode.',
+                    'debug_otp' => (string) $otp,
+                    'mail_failed' => true,
+                ]);
+            }
             
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send OTP email. Please try again or contact support.'
-            ], 500);
+                'message' => 'Unable to send OTP right now. Please verify SMTP credentials or try again later.',
+                'mail_failed' => true,
+            ]);
         }
     }
 

@@ -30,7 +30,7 @@
                         {{-- Mobile-only menu items for guests --}}
                         <li class="nav-item d-lg-none">
                             <a class="nav-link" href="{{ url('/find-agents') }}">
-                                <i class="fa-solid fa-search mr-2"></i>Find Agents
+                                <span class="mobile-find-brand">Find <span class="brand-padosi">Padosi</span><span class="brand-agent">Agent</span></span>
                             </a>
                         </li>
                     @endguest

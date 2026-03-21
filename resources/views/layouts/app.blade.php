@@ -146,7 +146,6 @@
                         timer: 3500,
                         showConfirmButton: false,
                         padding: '2.5rem',
-                        borderRadius: '20px',
                         showClass: {
                             popup: 'animate__animated animate__fadeInDown'
                         },
@@ -505,6 +504,7 @@
                                 $.ajax({
                                     url: "{{ route('client.quick-register') }}",
                                     type: "POST",
+                                    timeout: 15000,
                                     data: {
                                         _token: "{{ csrf_token() }}",
                                         ...result.value
@@ -517,8 +517,7 @@
                                                 text: 'We sent your credentials to your email.',
                                                 timer: 3000,
                                                 showConfirmButton: false,
-                                                padding: '2rem',
-                                                borderRadius: '15px'
+                                                padding: '2rem'
                                             }).then(() => {
                                                 window.location.href = response.redirect;
                                             });
@@ -527,7 +526,9 @@
                                         }
                                     },
                                     error: function(xhr) {
-                                        const message = xhr.responseJSON ? xhr.responseJSON.message : 'An error occurred';
+                                        const message = xhr.status === 0
+                                            ? 'Request timed out. Please check your internet and try again.'
+                                            : (xhr.responseJSON ? xhr.responseJSON.message : 'An error occurred');
                                         Swal.fire('Error', message, 'error');
                                     }
                                 });
@@ -535,7 +536,7 @@
                         });
                     } else if (result.dismiss === Swal.DismissReason.cancel) {
                         // Redirect to home page when user clicks Cancel
-                        htmx.ajax('GET', "{{ url('/') }}", {target: '#app-content', select: '#app-content'});
+                        window.location.href = "{{ url('/') }}";
                     }
                 });
             });

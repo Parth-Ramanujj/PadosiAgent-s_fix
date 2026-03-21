@@ -68,7 +68,10 @@ class AuthController extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            throw $e;
+
+            return back()->withErrors([
+                'email' => 'Login service is temporarily unavailable. Please try again in a moment.'
+            ])->onlyInput('email');
         }
     }
 

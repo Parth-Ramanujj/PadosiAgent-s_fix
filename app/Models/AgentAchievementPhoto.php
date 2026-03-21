@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AgentAchievementPhoto extends Model
 {
@@ -24,18 +25,34 @@ class AgentAchievementPhoto extends Model
     {
         $path = trim((string) ($this->photo_path ?? ''));
         if ($path === '') {
-            return null;
+            return asset('img/avatar-icon.jpg');
         }
 
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        if (Str::startsWith($path, ['http://', 'https://'])) {
             return $path;
         }
 
-        $normalizedPath = ltrim($path, '/');
-        if (str_starts_with($normalizedPath, 'storage/')) {
-            $normalizedPath = substr($normalizedPath, strlen('storage/'));
+        $normalizedPath = str_replace('\\', '/', ltrim($path, '/'));
+
+        foreach (['app/public/', 'public/storage/', 'public/', 'storage/'] as $prefix) {
+            if (Str::startsWith($normalizedPath, $prefix)) {
+                $normalizedPath = Str::after($normalizedPath, $prefix);
+                break;
+            }
         }
 
-        return Storage::disk('public')->url($normalizedPath);
+        if ($normalizedPath !== '' && Storage::disk('public')->exists($normalizedPath)) {
+            return Storage::disk('public')->url($normalizedPath);
+        }
+
+        if ($normalizedPath !== '' && file_exists(public_path($normalizedPath))) {
+            return asset($normalizedPath);
+        }
+
+        if ($normalizedPath !== '' && file_exists(public_path('storage/' . $normalizedPath))) {
+            return asset('storage/' . $normalizedPath);
+        }
+
+        return asset('img/avatar-icon.jpg');
     }
 }

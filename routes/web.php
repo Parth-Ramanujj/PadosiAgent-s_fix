@@ -38,7 +38,6 @@ Route::post('/agent/toggle-favorite', [\App\Http\Controllers\Frontend\FavoriteCo
 // Contact Us Routes
 Route::view('/contact', 'contact')->name('contact');
 Route::post('/contact/submit', [ContactController::class, 'store'])->name('contact.submit');
-Route::get('/agent-registration', [AgentRegistrationController::class, 'showRegistrationForm'])->name('agent.registration');
 Route::view('/agent-login', 'agent-login')->name('agent.login');
 Route::view('/client-login', 'client-login')->name('client.login');
 Route::post('/login', [AuthController::class, 'login'])->name('login');

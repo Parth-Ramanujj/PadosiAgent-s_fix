@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class ContactController extends Controller
 {
@@ -79,6 +80,13 @@ class ContactController extends Controller
                 'message' => 'Please fix the validation errors below.',
                 'errors' => $e->errors()
             ], 422);
+        } catch (TransportExceptionInterface $e) {
+            Log::error('CONTACT FORM SUBMISSION - SMTP Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Mail service authentication failed. Please verify MAIL_USERNAME / MAIL_PASSWORD in server .env.'
+            ], 500);
         } catch (\Exception $e) {
             Log::error('CONTACT FORM SUBMISSION - Error: ' . $e->getMessage());
             Log::error('CONTACT FORM SUBMISSION - Trace: ' . $e->getTraceAsString());

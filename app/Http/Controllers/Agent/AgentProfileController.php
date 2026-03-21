@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AgentProfileController extends Controller
 {
@@ -149,6 +150,10 @@ class AgentProfileController extends Controller
                 'instagram_url' => 'nullable|url',
                 'facebook_url' => 'nullable|url',
                 'youtube_url' => 'nullable|url',
+                'achievement_photos' => 'nullable|array|max:10',
+                'achievement_photos.*' => 'image|max:5120',
+                'remove_photos' => 'nullable|array',
+                'remove_photos.*' => 'integer',
             ],
             6 => [
                 'lead_types' => 'required|array',
@@ -161,12 +166,25 @@ class AgentProfileController extends Controller
         // Determine if this is a step save or full save
         $currentStep = $request->input('current_step');
 
-        // Normalize website URL if provided without protocol
-        if ($request->filled('website')) {
-            $website = $request->input('website');
-            if (!preg_match("~^(?:f|ht)tps?://~i", $website)) {
-                $request->merge(['website' => 'https://' . $website]);
+        // Normalize URL fields when user enters values without protocol.
+        foreach (['website', 'google_business', 'linkedin_url', 'instagram_url', 'facebook_url', 'youtube_url'] as $urlField) {
+            if ($request->filled($urlField)) {
+                $url = trim((string) $request->input($urlField));
+                if ($url !== '' && !preg_match("~^(?:f|ht)tps?://~i", $url)) {
+                    $request->merge([$urlField => 'https://' . $url]);
+                }
             }
+        }
+
+        // Normalize and persist languages as comma-separated lowercase slugs.
+        if ($request->filled('languages')) {
+            $normalizedLanguages = collect(explode(',', (string) $request->input('languages')))
+                ->map(fn($lang) => Str::of($lang)->trim()->lower()->value())
+                ->filter()
+                ->unique()
+                ->implode(',');
+
+            $request->merge(['languages' => $normalizedLanguages]);
         }
 
         if ($currentStep) {
@@ -340,6 +358,29 @@ class AgentProfileController extends Controller
 
             // Step 5: Additional
             if ($shouldProcess(5)) {
+                $removePhotoIds = collect($request->input('remove_photos', []))
+                    ->filter(fn($id) => is_numeric($id))
+                    ->map(fn($id) => (int) $id)
+                    ->unique()
+                    ->values();
+
+                $existingPhotosCount = $agent->achievementPhotos()->count();
+                $removableCount = $removePhotoIds->isEmpty()
+                    ? 0
+                    : $agent->achievementPhotos()->whereIn('id', $removePhotoIds->all())->count();
+                $newPhotosCount = $request->hasFile('achievement_photos') ? count($request->file('achievement_photos')) : 0;
+                $finalPhotosCount = max(0, $existingPhotosCount - $removableCount) + $newPhotosCount;
+
+                if ($finalPhotosCount > 10) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'You can upload a maximum of 10 achievement photos.',
+                        'errors' => [
+                            'achievement_photos' => ['You can upload a maximum of 10 achievement photos.']
+                        ]
+                    ], 422);
+                }
+
                 $profile->fill([
                     'website_url' => $request->website,
                     'social_links' => [
@@ -417,10 +458,13 @@ class AgentProfileController extends Controller
 
             DB::commit();
 
+            $agent->load('profile');
+
             return response()->json([
                 'status' => 'success',
                 'message' => $currentStep ? 'Progress saved' : 'Profile under review - You will receive an email once approved',
-                'redirect' => $currentStep ? null : route('agent.dashboard')
+                'redirect' => $currentStep ? null : route('agent.dashboard'),
+                'profile_photo_url' => $agent->profile?->profile_photo_url,
             ]);
 
         } catch (\Exception $e) {

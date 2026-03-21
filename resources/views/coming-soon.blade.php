@@ -554,7 +554,7 @@
                                     <div class="step">3</div>
                                 </div>
 
-                                <form id="agentForm1">
+                                <form id="agentForm1" action="{{ route('agent.register.step1') }}" method="POST" hx-boost="false" data-hx-boost="false" hx-disable>
                                     <div class="form-group">
                                         <label>Full Name *</label>
                                         <input type="text" name="fullname" placeholder="Enter your full name" required>
@@ -2368,11 +2368,15 @@ document.getElementById('agentForm1').addEventListener('submit', async function 
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json'
             }
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({
+            success: false,
+            message: 'Unexpected server response. Please try again.'
+        }));
 
         if (!response.ok) {
             // Handle 422 validation errors (email already exists, validation errors)

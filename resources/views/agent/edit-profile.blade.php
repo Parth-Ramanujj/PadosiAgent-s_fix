@@ -65,9 +65,9 @@
                         <!-- Profile Photo Upload -->
                         <div class="text-center mb-5">
                             <div class="profile-photo-upload">
-                                <label for="profile-photo" class="photo-circle mb-0 {{ ($agent->profile->profile_photo_path ?? '') ? 'has-image' : '' }}" style="{{ ($agent->profile->profile_photo_path ?? '') ? 'border-style: solid; background-color: white;' : '' }}">
-                                    @if($agent->profile->profile_photo_path ?? '')
-                                        <img src="{{ $agent->profile->profile_photo_url }}" alt="Profile Photo">
+                                <label for="profile-photo" class="photo-circle mb-0 {{ ($agent->profile?->profile_photo_path ?? '') ? 'has-image' : '' }}" style="{{ ($agent->profile?->profile_photo_path ?? '') ? 'border-style: solid; background-color: white;' : '' }}">
+                                    @if($agent->profile?->profile_photo_path ?? '')
+                                        <img src="{{ $agent->profile?->profile_photo_url }}" alt="Profile Photo" onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}';">
                                     @else
                                         <i class="fas fa-camera fa-2x"></i>
                                     @endif
@@ -1494,6 +1494,15 @@ $(document).ready(function() {
                 contentType: false,
                 success: function(response) {
                     btn.prop('disabled', false).html(originalText);
+
+                    if (step === 1 && response.profile_photo_url) {
+                        const photoUrl = `${response.profile_photo_url}?v=${Date.now()}`;
+                        photoCircle.find('i').hide();
+                        photoCircle.find('img').remove();
+                        photoCircle.append(`<img src="${photoUrl}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`);
+                        photoCircle.addClass('has-image').css('border-style', 'solid').css('background-color', 'white');
+                    }
+
                     resolve(true);
                 },
                 error: function(xhr) {
@@ -1700,6 +1709,14 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
                 if (response.status === 'success') {
+                    if (response.profile_photo_url) {
+                        const photoUrl = `${response.profile_photo_url}?v=${Date.now()}`;
+                        photoCircle.find('i').hide();
+                        photoCircle.find('img').remove();
+                        photoCircle.append(`<img src="${photoUrl}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`);
+                        photoCircle.addClass('has-image').css('border-style', 'solid').css('background-color', 'white');
+                    }
+
                     // Mark step 7 as completed
                     $(`.step-item[data-step="7"]`).addClass('completed');
                     
@@ -2244,7 +2261,7 @@ $(document).ready(function() {
             (function(url, id) {
                 const previewItem = `
                     <div class="photo-preview-item" data-id="${id}">
-                        <img src="${url}" alt="Achievement Photo">
+                        <img src="${url}" alt="Achievement Photo" onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}';">
                         <button type="button" class="remove-photo" onclick="removeExistingPhoto(${id}, this)">
                             <i class="fas fa-times"></i>
                         </button>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class HomeController extends Controller
 {
@@ -24,6 +25,18 @@ class HomeController extends Controller
 
     public function findAgents(Request $request)
     {
+        $shouldGateGuest = auth()->guest() && !$request->session()->has('quick_lead_user');
+
+        // Do not query agent listings for guests until they submit details.
+        if ($shouldGateGuest) {
+            $agents = new LengthAwarePaginator([], 0, 5, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+
+            return view('find-agents', compact('agents', 'shouldGateGuest'));
+        }
+
         $query = \App\Models\Agent::query()->with([
             'profile',
             'insuranceSegments',
@@ -142,6 +155,7 @@ class HomeController extends Controller
             return view('partials.agents-list-chunk', compact('agents'));
         }
 
-        return view('find-agents', compact('agents'));
+        $shouldGateGuest = false;
+        return view('find-agents', compact('agents', 'shouldGateGuest'));
     }
 }
