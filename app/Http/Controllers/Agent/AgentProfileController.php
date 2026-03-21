@@ -265,13 +265,21 @@ class AgentProfileController extends Controller
 
                     // Upload new photo to Cloudinary
                     $file = $request->file('profile_photo');
-                    $uploadResult = cloudinary()->uploadApi()->upload($file->getRealPath(), [
-                        'folder'        => 'padosiagent/profiles',
-                        'public_id'     => 'agent_' . $agent->id . '_' . time(),
-                        'overwrite'     => true,
-                        'resource_type' => 'image',
-                    ]);
-                    $profile->profile_photo_path = $uploadResult['secure_url'];
+                    try {
+                        $uploadResult = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                            'folder'        => 'padosiagent/profiles',
+                            'public_id'     => 'agent_' . $agent->id . '_' . time(),
+                            'overwrite'     => true,
+                            'resource_type' => 'image',
+                        ]);
+                        if (!empty($uploadResult['secure_url'])) {
+                            $profile->profile_photo_path = $uploadResult['secure_url'];
+                        } else {
+                            Log::error('Cloudinary upload returned no secure_url', ['result' => $uploadResult]);
+                        }
+                    } catch (\Throwable $cloudinaryEx) {
+                        Log::error('Cloudinary profile photo upload failed: ' . $cloudinaryEx->getMessage());
+                    }
                 }
                 
                 $profile->save();
@@ -430,12 +438,20 @@ class AgentProfileController extends Controller
 
                 if ($request->hasFile('achievement_photos')) {
                     foreach ($request->file('achievement_photos') as $photoFile) {
-                        $uploadResult = cloudinary()->uploadApi()->upload($photoFile->getRealPath(), [
-                            'folder'        => 'padosiagent/achievements',
-                            'public_id'     => 'achievement_' . $agent->id . '_' . time() . '_' . uniqid(),
-                            'resource_type' => 'image',
-                        ]);
-                        $agent->achievementPhotos()->create(['photo_path' => $uploadResult['secure_url']]);
+                        try {
+                            $uploadResult = cloudinary()->uploadApi()->upload($photoFile->getRealPath(), [
+                                'folder'        => 'padosiagent/achievements',
+                                'public_id'     => 'achievement_' . $agent->id . '_' . time() . '_' . uniqid(),
+                                'resource_type' => 'image',
+                            ]);
+                            if (!empty($uploadResult['secure_url'])) {
+                                $agent->achievementPhotos()->create(['photo_path' => $uploadResult['secure_url']]);
+                            } else {
+                                Log::error('Cloudinary achievement upload returned no secure_url', ['result' => $uploadResult]);
+                            }
+                        } catch (\Throwable $cloudinaryEx) {
+                            Log::error('Cloudinary achievement photo upload failed: ' . $cloudinaryEx->getMessage());
+                        }
                     }
                 }
 
