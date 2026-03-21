@@ -265,13 +265,13 @@ class AgentProfileController extends Controller
 
                     // Upload new photo to Cloudinary
                     $file = $request->file('profile_photo');
-                    $uploadResult = cloudinary()->upload($file->getRealPath(), [
-                        'folder'    => 'padosiagent/profiles',
-                        'public_id' => 'agent_' . $agent->id . '_' . time(),
-                        'overwrite' => true,
+                    $uploadResult = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                        'folder'        => 'padosiagent/profiles',
+                        'public_id'     => 'agent_' . $agent->id . '_' . time(),
+                        'overwrite'     => true,
                         'resource_type' => 'image',
                     ]);
-                    $profile->profile_photo_path = $uploadResult->getSecurePath();
+                    $profile->profile_photo_path = $uploadResult['secure_url'];
                 }
                 
                 $profile->save();
@@ -430,12 +430,12 @@ class AgentProfileController extends Controller
 
                 if ($request->hasFile('achievement_photos')) {
                     foreach ($request->file('achievement_photos') as $photoFile) {
-                        $uploadResult = cloudinary()->upload($photoFile->getRealPath(), [
+                        $uploadResult = cloudinary()->uploadApi()->upload($photoFile->getRealPath(), [
                             'folder'        => 'padosiagent/achievements',
                             'public_id'     => 'achievement_' . $agent->id . '_' . time() . '_' . uniqid(),
                             'resource_type' => 'image',
                         ]);
-                        $agent->achievementPhotos()->create(['photo_path' => $uploadResult->getSecurePath()]);
+                        $agent->achievementPhotos()->create(['photo_path' => $uploadResult['secure_url']]);
                     }
                 }
 
