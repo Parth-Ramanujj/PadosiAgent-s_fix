@@ -145,7 +145,7 @@ class AgentRegistrationController extends Controller
                 'errors' => $ve->errors()
             ], 422);
         } catch (\Throwable $e) {
-            Log::error('OTP Send Comprehensive Error: ' . $e->getMessage() . " => " . $e->getTraceAsString());
+            Log::error('OTP Send Error: ' . $e->getMessage() . " => " . $e->getTraceAsString());
 
             $errorClass = get_class($e);
             $errorMessage = $e->getMessage();
