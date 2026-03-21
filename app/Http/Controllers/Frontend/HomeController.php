@@ -149,6 +149,11 @@ class HomeController extends Controller
         $agents = $query->orderBy('created_at', 'desc')->paginate(5);
         $agents->appends($request->all());
 
+        // Return partial for HTMX requests to avoid full page load
+        if ($request->header('HX-Request')) {
+            return view('partials.find-agents-list', compact('agents', 'shouldGateGuest'));
+        }
+
         return view('find-agents', compact('agents', 'shouldGateGuest'));
     }
 }
