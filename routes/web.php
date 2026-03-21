@@ -8,6 +8,7 @@ use App\Http\Controllers\Frontend\ComingSoonController;
 use App\Http\Controllers\User\ParticipantController;
 use App\Http\Controllers\Frontend\FacebookPostController;
 use App\Http\Controllers\Frontend\ContactController;
+use App\Http\Controllers\Frontend\AgentLeadController;
 
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Admin\ExportAgentController;
@@ -43,6 +44,7 @@ Route::view('/client-login', 'client-login')->name('client.login');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/client/quick-register', [ClientRegistrationController::class, 'quickRegister'])->name('client.quick-register');
+Route::post('/agent/leads/capture', [AgentLeadController::class, 'capture'])->name('agent.leads.capture');
 
 // Password Reset Routes
 Route::get('/forgot-password', [AuthController::class, 'showLinkRequestForm'])->name('password.request');

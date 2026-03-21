@@ -171,6 +171,8 @@
         </div>
     </div>
     <!-- Latest compiled JavaScript -->
+    <script src="{{ asset('js/preloader.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/form-handler.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/back-to-top-button.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/contact-validate.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/contact-form.js') }}?v={{ time() }}"></script>

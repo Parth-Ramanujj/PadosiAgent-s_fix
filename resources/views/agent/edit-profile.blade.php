@@ -84,7 +84,7 @@
                             <div class="col-md-6 mb-4">
                                 <label class="form-label">Your Full Name <span class="text-danger">*</span> <i class="fas fa-info-circle text-muted" data-toggle="tooltip" title="Enter your legal name as it appears on your identity documents" style="font-size: 12px; cursor: help;"></i></label>
                                 <input type="text" class="form-control" name="full_name" value="{{ $agent->fullname }}" placeholder="Enter your full name" maxlength="70" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '');">
-                                <small class="text-muted">As per PAN or IRDAI License</small>
+                                <small class="text-muted">As per PAN</small>
                             </div>
                             <div class="col-md-6 mb-4">
                                 <label class="form-label">Display Name (Public Profile) <i class="fas fa-info-circle text-muted" data-toggle="tooltip" title="Provide the name you'd like customers to see on your public profile" style="font-size: 12px; cursor: help;"></i></label>
@@ -225,18 +225,18 @@
                         <!-- Info Alert -->
                         <div class="alert alert-info mb-4" style="background-color: #e0f2fe; border: 1px solid #bae6fd; border-radius: 10px;">
                             <i class="fas fa-info-circle mr-2"></i>
-                            <small>Provide either PAN Number or IRDAI License Number (at least one is required)</small>
+                            <small>Provide PAN Number for IRDAI Verified Badge on your Profile</small>
                         </div>
 
                         <!-- PAN and License -->
                         <div class="row">
                             <div class="col-md-6 mb-4">
-                                <label class="form-label">PAN Number <i class="fas fa-info-circle text-muted" data-toggle="tooltip" title="Your 10-digit Permanent Account Number for tax verification" style="font-size: 12px; cursor: help;"></i></label>
-                                <input type="text" class="form-control" name="pan" id="pan_number" value="{{ $agent->profile->pan_number ?? '' }}" placeholder="ABCDE1234F" maxlength="10" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');">
+                                <label class="form-label">PAN Number <span class="text-danger">*</span> <i class="fas fa-info-circle text-muted" data-toggle="tooltip" title="For IRDAI Agency License verification purpose only." style="font-size: 12px; cursor: help;"></i></label>
+                                <input type="text" class="form-control" name="pan" id="pan_number" value="{{ $agent->profile->pan_number ?? '' }}" placeholder="ABCDE1234F" maxlength="10" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');" required>
                             </div>
                             <div class="col-md-6 mb-4">
-                                <label class="form-label">IRDAI License Number <i class="fas fa-info-circle text-muted" data-toggle="tooltip" title="Your valid insurance agent license number issued by IRDAI" style="font-size: 12px; cursor: help;"></i></label>
-                                <input type="text" class="form-control" name="license" id="license_number" value="{{ $agent->profile->license_number ?? '' }}" placeholder="License number" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');">
+                                <label class="form-label">IRDAI License Number <i class="fas fa-info-circle text-muted" data-toggle="tooltip" title="Backoffice will update this after PAN verification." style="font-size: 12px; cursor: help;"></i></label>
+                                <input type="text" class="form-control" id="license_number" value="{{ $agent->profile->license_number ?? '' }}" placeholder="Will be updated by backoffice after verification" disabled>
                             </div>
                         </div>
 
@@ -1381,18 +1381,16 @@ $(document).ready(function() {
             if (!$('[name="experience_years"]').val()) addError('experience_years', 'Years of Experience is required');
             if (!$('[name="client_base"]').val()) addError('client_base', 'Client Base is required');
 
-            // PAN or License Validation
+            // PAN Validation
             const pan = $('[name="pan"]').val().trim();
-            const license = $('[name="license"]').val().trim();
-            
-            if (!pan && !license) {
+
+            if (!pan) {
                 isValid = false;
                 $('[name="pan"]').addClass('is-invalid');
-                $('[name="license"]').addClass('is-invalid');
                 if ($('#step-2 .pan-license-error').length === 0) {
-                    $('[name="license"]').after('<div class="invalid-feedback d-block pan-license-error">Provide either PAN Number or IRDAI License Number (at least one is required)</div>');
+                    $('[name="pan"]').after('<div class="invalid-feedback d-block pan-license-error">PAN Number is required for IRDAI verification</div>');
                 }
-            } else if (pan) {
+            } else {
                 // Validate PAN Format
                 const panRegex = /[A-Z]{5}[0-9]{4}[A-Z]{1}/;
                 if (!panRegex.test(pan)) {
@@ -2814,15 +2812,9 @@ function removeTimelineItem(index) {
 }
 
 function updateTimelineButtonState() {
-    const count = $('#timeline-list .timeline-item-row').length;
     const btn = $('#add-timeline-btn');
-    if (count >= 4) {
-        btn.prop('disabled', true);
-        btn.html('<i class="fas fa-ban mr-1"></i> Max 4 Reached');
-    } else {
-        btn.prop('disabled', false);
-        btn.html('<i class="fas fa-plus mr-1"></i> Add');
-    }
+    btn.prop('disabled', false);
+    btn.html('<i class="fas fa-plus mr-1"></i> Add');
 }
 
 </script>

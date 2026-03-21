@@ -9,6 +9,9 @@ class AgentReview extends Model
     protected $fillable = [
         'agent_id',
         'user_id',
+        'reviewer_name',
+        'reviewer_email',
+        'reviewer_mobile',
         'rating',
         'review',
         'is_approved',

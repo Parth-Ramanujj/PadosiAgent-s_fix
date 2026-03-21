@@ -70,6 +70,15 @@ class ClientRegistrationController extends Controller
 
             DB::commit();
 
+            session([
+                'quick_lead_user' => [
+                    'fullname' => $request->fullname,
+                    'email' => $request->email,
+                    'mobile' => $request->mobile,
+                    'pincode' => $request->pincode,
+                ]
+            ]);
+
             // 4. Auto-Login
             Auth::login($user);
 

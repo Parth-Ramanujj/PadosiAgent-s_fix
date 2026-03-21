@@ -74,8 +74,20 @@
                 
                 <div class="mt-2 d-flex align-items-center">
                     <span class="badge-verified-txt"><i class="fas fa-check-circle mr-1"></i> Verified</span>
-                    @if($agent->profile && $agent->profile->license_number)
+                    @php
+                        $rawPlan = $agent->activeSubscription->selected_plan ?? '';
+                        $decodedPlan = json_decode($rawPlan, true);
+                        $planLabel = (json_last_error() === JSON_ERROR_NONE && is_array($decodedPlan) && isset($decodedPlan['name']))
+                            ? $decodedPlan['name']
+                            : (string) $rawPlan;
+                        $isTrusted = stripos($planLabel, 'professional') !== false;
+                        $isApprovedByAdmin = strtolower((string) ($agent->status ?? '')) === 'active';
+                    @endphp
+                    @if($isApprovedByAdmin)
                         <span class="badge-irdai" style="margin-left: 12px;">IRDAI</span>
+                    @endif
+                    @if($isTrusted)
+                        <span style="margin-left: 12px; background: #eefbf6; color: #0f766e; border: 1px solid #99f6e4; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 600;">Trusted</span>
                     @endif
                 </div>
             </h1>
@@ -97,22 +109,45 @@
             </div>
 
             <div class="insurance-types">
-                @foreach($agent->insuranceSegments as $segment)
+                @php
+                    $segmentValues = $agent->insuranceSegments
+                        ? $agent->insuranceSegments->map(function ($segment) {
+                            return strtolower(trim($segment->segment_type ?? $segment->name ?? ''));
+                        })->filter(function ($value) {
+                            return !empty($value) && $value !== '-';
+                        })->unique()->values()->all()
+                        : [];
+
+                    $priorityOrder = ['health', 'life', 'motor', 'sme'];
+                    $orderedSegments = [];
+
+                    foreach ($priorityOrder as $priority) {
+                        if (in_array($priority, $segmentValues, true)) {
+                            $orderedSegments[] = $priority;
+                        }
+                    }
+
+                    foreach ($segmentValues as $value) {
+                        if (!in_array($value, $orderedSegments, true)) {
+                            $orderedSegments[] = $value;
+                        }
+                    }
+                @endphp
+                @foreach($orderedSegments as $type)
                     @php
-                        $type = strtolower(trim($segment->segment_type ?? $segment->name ?? ''));
-                        if(empty($type) || $type === '-') continue;
-                        
                         $icon = 'fa-shield-alt';
-                        if(strpos($type, 'life') !== false) $icon = 'fa-user-shield';
-                        elseif(strpos($type, 'health') !== false) $icon = 'fa-heartbeat';
-                        elseif(strpos($type, 'motor') !== false) $icon = 'fa-car';
-                        elseif(strpos($type, 'sme') !== false) $icon = 'fa-store';
+                        if (strpos($type, 'life') !== false) $icon = 'fa-user-shield';
+                        elseif (strpos($type, 'health') !== false) $icon = 'fa-heartbeat';
+                        elseif (strpos($type, 'motor') !== false) $icon = 'fa-car';
+                        elseif (strpos($type, 'sme') !== false) $icon = 'fa-store';
+
+                        $tagLabel = $type === 'sme' ? 'SME' : ucfirst($type);
                     @endphp
                     <div class="insurance-pill">
-                        <i class="fas {{ $icon }}"></i> {{ ucfirst($type) }}
+                        <i class="fas {{ $icon }}"></i> {{ $tagLabel }}
                     </div>
                 @endforeach
-                @if($agent->insuranceSegments->isEmpty())
+                @if(empty($orderedSegments))
                     <div class="text-muted small">No segments listed</div>
                 @endif
             </div>
@@ -331,7 +366,7 @@
                     </button>
                     @guest
                         <p class="text-muted small mt-2">
-                             Note: You will be asked to share your name and email to submit this review.
+                             Note: You will be asked to share your name, email, and mobile number to submit this review.
                         </p>
                     @endguest
                 </form>
@@ -344,9 +379,9 @@
                     <div class="review-top">
                         <div class="reviewer-info">
                             <div class="reviewer-avatar">
-                                {{ strtoupper(substr($review->user->fullname ?? 'User', 0, 1)) }}
+                                {{ strtoupper(substr($review->user->fullname ?? $review->reviewer_name ?? 'User', 0, 1)) }}
                             </div>
-                            <div class="reviewer-name">{{ $review->user->fullname ?? 'User' }}</div>
+                            <div class="reviewer-name">{{ $review->user->fullname ?? $review->reviewer_name ?? 'User' }}</div>
                         </div>
                         <div class="stars">
                             @for($i = 1; $i <= 5; $i++)
@@ -371,6 +406,8 @@
 
 <script>
 (function() {
+    var currentGuestData = null;
+
     /**
      * Helper to show guest registration popup and then execute callback
      */
@@ -436,38 +473,24 @@
             backdrop: 'rgba(0,0,0,0.6)'
         }).then(function(result) {
             if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Connecting you...',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: function() {
-                        Swal.showLoading();
-                        var postData = {
-                            _token: "{{ csrf_token() }}",
-                            fullname: result.value.fullname,
-                            email: result.value.email,
-                            mobile: result.value.mobile
-                        };
-                        $.ajax({
-                            url: "{{ route('client.quick-register') }}",
-                            type: "POST",
-                            data: postData,
-                            success: function(response) {
-                                if (response.status === 'success') {
-                                    onRegistered();
-                                } else {
-                                    Swal.fire('Error', response.message, 'error');
-                                }
-                            },
-                            error: function(xhr) {
-                                var message = xhr.responseJSON ? xhr.responseJSON.message : 'An error occurred';
-                                Swal.fire('Error', message, 'error');
-                            }
-                        });
-                    }
-                });
+                currentGuestData = {
+                    fullname: result.value.fullname,
+                    email: result.value.email,
+                    mobile: result.value.mobile
+                };
+
+                onRegistered(currentGuestData);
             }
         });
+    };
+
+    var proceedToDestination = function(url, target) {
+        if (target === '_blank') {
+            window.open(url, '_blank');
+            return;
+        }
+
+        window.location.href = url;
     };
 
     // Handler for guest actions (WhatsApp/Call/Social)
@@ -476,13 +499,41 @@
         var url = $(this).data('url-direct');
         var target = $(this).attr('target');
         
-        showGuestRegistrationPopup('Connect with Agent', function() {
-            if (target === '_blank') {
-                window.open(url, '_blank');
-                Swal.close();
-            } else {
-                window.location.href = url;
-            }
+        showGuestRegistrationPopup('Connect with Agent', function(guestData) {
+            var postData = {
+                _token: "{{ csrf_token() }}",
+                fullname: guestData.fullname,
+                email: guestData.email,
+                mobile: guestData.mobile
+            };
+
+            Swal.fire({
+                title: 'Connecting you...',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: function() {
+                    Swal.showLoading();
+                    $.ajax({
+                        url: "{{ route('client.quick-register') }}",
+                        type: "POST",
+                        data: postData,
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                Swal.close();
+                                proceedToDestination(url, target);
+                            } else {
+                                Swal.close();
+                                proceedToDestination(url, target);
+                            }
+                        },
+                        error: function(xhr) {
+                            // Do not block the user action if optional lead capture fails.
+                            Swal.close();
+                            proceedToDestination(url, target);
+                        }
+                    });
+                }
+            });
         });
     });
 
@@ -544,16 +595,25 @@
             updateStars(parseInt(ratingInput.value));
         }
 
-        var performSubmit = function() {
+        var performSubmit = function(guestData) {
             var originalBtnHtml = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
-            
-            $.post('{{ route("agent.store-review", ["slug" => $agent->profile->slug ?? $agent->id]) }}', {
+
+            var payload = {
                 _token: '{{ csrf_token() }}',
                 rating: ratingInput.value,
                 review: reviewTextInput.value
-            }, function(data) {
+            };
+
+            var reviewGuestData = guestData || currentGuestData;
+            if (reviewGuestData) {
+                payload.fullname = reviewGuestData.fullname;
+                payload.email = reviewGuestData.email;
+                payload.mobile = reviewGuestData.mobile;
+            }
+            
+            $.post('{{ route("agent.store-review", ["slug" => $agent->profile->slug ?? $agent->id]) }}', payload, function(data) {
                 if (data.status === 'success') {
                     Swal.fire({
                         icon: 'success',
@@ -615,7 +675,9 @@
             }
 
             if (isGuest) {
-                showGuestRegistrationPopup('Submit Review', performSubmit);
+                showGuestRegistrationPopup('Submit Review', function(guestData) {
+                    performSubmit(guestData);
+                });
             } else {
                 performSubmit();
             }

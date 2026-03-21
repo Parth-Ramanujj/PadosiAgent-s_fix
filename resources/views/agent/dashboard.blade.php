@@ -13,6 +13,21 @@
             <div class="d-flex align-items-center">
                 @php
                     $displayName = $agent->profile?->display_name ?? $agent->fullname;
+                    $dashboardStats = $dashboardStats ?? [
+                        'conversionRate' => 0,
+                        'monthlyTarget' => 0,
+                        'totalPageViews' => 0,
+                        'contactRequests' => 0,
+                        'monthlyVisits' => 0,
+                        'totalLeads' => 0,
+                        'monthlyLeads' => 0,
+                        'newLeads' => 0,
+                        'contactedLeads' => 0,
+                        'followUpLeads' => 0,
+                        'closedLeads' => 0,
+                        'activeLeads' => 0,
+                    ];
+                    $recentLeads = $recentLeads ?? collect();
                 @endphp
                 <div class="agent-avatar-circle mr-3">
                     <span class="avatar-letter">{{ strtoupper(substr($displayName, 0, 1)) }}</span>
@@ -95,30 +110,30 @@
                             <div class="performance-item mb-4">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="perf-label">Lead Conversion Rate</span>
-                                    <span class="perf-value">0%</span>
+                                    <span class="perf-value">{{ $dashboardStats['conversionRate'] }}%</span>
                                 </div>
                                 <div class="progress perf-progress">
-                                    <div class="progress-bar bg-navy" role="progressbar" style="width: 0%"></div>
+                                    <div class="progress-bar bg-navy" role="progressbar" style="width: {{ $dashboardStats['conversionRate'] }}%"></div>
                                 </div>
                             </div>
     
                             <div class="performance-item mb-4 pb-2 border-bottom">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="perf-label">Monthly Target</span>
-                                    <span class="perf-value">0%</span>
+                                    <span class="perf-value">{{ $dashboardStats['monthlyTarget'] }}%</span>
                                 </div>
                                 <div class="progress perf-progress">
-                                    <div class="progress-bar bg-navy" role="progressbar" style="width: 0%"></div>
+                                    <div class="progress-bar bg-navy" role="progressbar" style="width: {{ $dashboardStats['monthlyTarget'] }}%"></div>
                                 </div>
                             </div>
     
                             <div class="d-flex justify-content-between mb-3 pt-2 stats-item">
                                 <span class="stats-label">Total Page Views</span>
-                                <span class="stats-value">0</span>
+                                <span class="stats-value">{{ number_format($dashboardStats['totalPageViews']) }}</span>
                             </div>
                             <div class="d-flex justify-content-between stats-item">
                                 <span class="stats-label">Contact Requests</span>
-                                <span class="stats-value">0</span>
+                                <span class="stats-value">{{ number_format($dashboardStats['contactRequests']) }}</span>
                             </div>
                         </div>
                     </div>
@@ -134,9 +149,9 @@
                                     <div class="mini-stat-box box-blue">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <div class="stat-icon-wrap"><i class="fas fa-user-plus"></i></div>
-                                            <span class="mini-bubble">0</span>
+                                            <span class="mini-bubble">{{ $dashboardStats['monthlyLeads'] }}</span>
                                         </div>
-                                        <div class="mini-stat-big-num">0</div>
+                                        <div class="mini-stat-big-num">{{ $dashboardStats['newLeads'] }}</div>
                                         <div class="mini-stat-label">New Leads</div>
                                     </div>
                                 </div>
@@ -144,9 +159,9 @@
                                     <div class="mini-stat-box box-green">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <div class="stat-icon-wrap"><i class="fas fa-users"></i></div>
-                                            <span class="mini-bubble">0</span>
+                                            <span class="mini-bubble">{{ $dashboardStats['contactedLeads'] }}</span>
                                         </div>
-                                        <div class="mini-stat-big-num">0</div>
+                                        <div class="mini-stat-big-num">{{ $dashboardStats['contactedLeads'] }}</div>
                                         <div class="mini-stat-label">Contacted</div>
                                     </div>
                                 </div>
@@ -154,9 +169,9 @@
                                     <div class="mini-stat-box box-teal">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <div class="stat-icon-wrap"><i class="fas fa-wave-square"></i></div>
-                                            <span class="mini-bubble">0</span>
+                                            <span class="mini-bubble">{{ $dashboardStats['followUpLeads'] }}</span>
                                         </div>
-                                        <div class="mini-stat-big-num">0</div>
+                                        <div class="mini-stat-big-num">{{ $dashboardStats['followUpLeads'] }}</div>
                                         <div class="mini-stat-label">Follow-up</div>
                                     </div>
                                 </div>
@@ -164,9 +179,9 @@
                                     <div class="mini-stat-box box-yellow">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <div class="stat-icon-wrap"><i class="fas fa-star"></i></div>
-                                            <span class="mini-bubble">0</span>
+                                            <span class="mini-bubble">{{ $dashboardStats['closedLeads'] }}</span>
                                         </div>
-                                        <div class="mini-stat-big-num">0</div>
+                                        <div class="mini-stat-big-num">{{ $dashboardStats['closedLeads'] }}</div>
                                         <div class="mini-stat-label">Closed</div>
                                     </div>
                                 </div>
@@ -187,15 +202,22 @@
                             <div class="row mb-5 text-center">
                                 <div class="col-4">
                                     <div class="insight-label mb-1">Total Leads</div>
-                                    <div class="insight-value">0</div>
+                                    <div class="insight-value">{{ $dashboardStats['totalLeads'] }}</div>
                                 </div>
                                 <div class="col-4 border-left">
                                     <div class="insight-label mb-1">Active</div>
-                                    <div class="insight-value">0</div>
+                                    <div class="insight-value">{{ $dashboardStats['activeLeads'] }}</div>
                                 </div>
                                 <div class="col-4 border-left">
                                     <div class="insight-label mb-1">Closed</div>
-                                    <div class="insight-value">0</div>
+                                    <div class="insight-value">{{ $dashboardStats['closedLeads'] }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3 text-center">
+                                <div class="col-12">
+                                    <div class="insight-label mb-1">Monthly Visits</div>
+                                    <div class="insight-value">{{ $dashboardStats['monthlyVisits'] }}</div>
                                 </div>
                             </div>
     
@@ -221,15 +243,47 @@
                                 <h5 class="card-section-title mb-1">Recent Leads</h5>
                                 <p class="text-muted small mb-0">Your latest potential clients</p>
                             </div>
-                            <button class="btn btn-view-all">View All Leads</button>
+                            <button class="btn btn-view-all" disabled>View All Leads</button>
                         </div>
-                        
-                        <div class="empty-list-display text-center py-5">
-                            <div class="empty-icon-wrap mb-4">
-                                <i class="far fa-folder-open fa-3x"></i>
+
+                        @if($recentLeads->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-borderless mb-0">
+                                    <thead>
+                                        <tr style="color:#64748b; font-size:13px;">
+                                            <th>Name</th>
+                                            <th>Contact</th>
+                                            <th>Pincode</th>
+                                            <th>Requirement</th>
+                                            <th>Source</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($recentLeads as $lead)
+                                            <tr>
+                                                <td>{{ $lead->customer_name ?? 'Guest User' }}</td>
+                                                <td>
+                                                    <div>{{ $lead->customer_mobile ?? '-' }}</div>
+                                                    <small class="text-muted">{{ $lead->customer_email ?? '-' }}</small>
+                                                </td>
+                                                <td>{{ $lead->customer_pincode ?? '-' }}</td>
+                                                <td>{{ $lead->enquiry_requirements ?? '-' }}</td>
+                                                <td style="text-transform: capitalize;">{{ $lead->interaction_type }}</td>
+                                                <td>{{ $lead->created_at->diffForHumans() }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
-                            <p class="empty-msg-text">No leads found. Start adding leads to see them here.</p>
-                        </div>
+                        @else
+                            <div class="empty-list-display text-center py-5">
+                                <div class="empty-icon-wrap mb-4">
+                                    <i class="far fa-folder-open fa-3x"></i>
+                                </div>
+                                <p class="empty-msg-text">No leads found. Start adding leads to see them here.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

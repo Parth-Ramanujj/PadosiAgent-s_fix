@@ -11,7 +11,7 @@
                 <span class="navbar-toggler-icon"></span>
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="collapse navbar-collapse mobile-nav-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mx-auto">
                     @guest
                         {{-- Public menu items - only shown when not logged in --}}
@@ -114,3 +114,26 @@
         </nav>
     </div>
 </header>
+
+<script>
+    (function () {
+        if (window.__mobileNavBindingsInitialized) return;
+        window.__mobileNavBindingsInitialized = true;
+
+        function closeMobileNav() {
+            if (window.innerWidth > 991) return;
+            var $collapse = jQuery('#navbarSupportedContent');
+            if ($collapse.length && $collapse.hasClass('show')) {
+                $collapse.collapse('hide');
+            }
+        }
+
+        jQuery(document).on('click', '#navbarSupportedContent .nav-link, #navbarSupportedContent .dropdown-item', function () {
+            closeMobileNav();
+        });
+
+        document.addEventListener('htmx:afterSwap', function () {
+            closeMobileNav();
+        });
+    })();
+</script>

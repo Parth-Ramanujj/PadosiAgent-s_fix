@@ -33,11 +33,11 @@ class AuthController extends Controller
                 if ($loginType && $user->role !== 'admin') {
                     if ($loginType === 'client' && $user->role === 'agent') {
                         Auth::logout();
-                        return back()->withErrors(['email' => 'This is an Agent account. Please use the Agent Login page.']);
+                        return back()->withErrors(['email' => 'Please Enter Valid Login Details']);
                     }
                     if ($loginType === 'agent' && $user->role === 'client') {
                         Auth::logout();
-                        return back()->withErrors(['email' => 'This is a Client account. Please use the Client Login page.']);
+                        return back()->withErrors(['email' => 'Please Enter Valid Login Details']);
                     }
                 }
 
@@ -60,7 +60,7 @@ class AuthController extends Controller
 
             \Illuminate\Support\Facades\Log::warning('Login failed for email', ['email' => $request->email]);
             return back()->withErrors([
-                'email' => 'The provided credentials do not match our records.',
+                'email' => 'Please Enter Valid Login Details',
             ])->onlyInput('email');
 
         } catch (\Exception $e) {

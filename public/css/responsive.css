@@ -5702,3 +5702,40 @@
         display: none;
     }
 }
+
+    @media screen and (max-width: 991px) {
+        .header .navbar {
+            position: relative;
+        }
+
+        .header .mobile-nav-collapse {
+            top: 100%;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-height: calc(100vh - 78px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .header .mobile-nav-collapse .navbar-nav .nav-item button.nav-link {
+            display: block;
+            width: 100%;
+            text-align: left;
+            font-size: 16px !important;
+            line-height: 16px !important;
+            padding: 12px 20px !important;
+            color: var(--e-global-color-secondary) !important;
+            background: transparent;
+            border: 0;
+        }
+
+        .header .mobile-nav-collapse .navbar-nav .nav-item button.nav-link:hover {
+            color: var(--e-global-color-white) !important;
+            background-color: var(--e-global-color-accent);
+        }
+
+        .header .mobile-nav-collapse .navbar-nav .nav-item button.nav-link.text-danger:hover {
+            color: var(--e-global-color-white) !important;
+        }
+    }

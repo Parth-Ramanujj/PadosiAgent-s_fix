@@ -149,6 +149,16 @@ class Agent extends Model
         return $this->hasMany(AgentReview::class, 'agent_id');
     }
 
+    public function leads()
+    {
+        return $this->hasMany(AgentLead::class);
+    }
+
+    public function profileViews()
+    {
+        return $this->hasMany(AgentProfileView::class);
+    }
+
     public function getAverageRatingAttribute()
     {
         return $this->reviews->where('is_approved', true)->avg('rating') ?? 0;

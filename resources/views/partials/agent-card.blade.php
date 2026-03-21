@@ -6,6 +6,15 @@
                  class="img-fluid">
         </figure>
         <div class="like-buttons">
+            @php
+                $rawPlan = $agent->activeSubscription->selected_plan ?? '';
+                $decodedPlan = json_decode($rawPlan, true);
+                $planLabel = (json_last_error() === JSON_ERROR_NONE && is_array($decodedPlan) && isset($decodedPlan['name']))
+                    ? $decodedPlan['name']
+                    : (string) $rawPlan;
+                $isTrusted = stripos($planLabel, 'professional') !== false;
+                $isApprovedByAdmin = strtolower((string) ($agent->status ?? '')) === 'active';
+            @endphp
             <button
                 class="p-1.5 rounded-lg transition-all bg-white hover:bg-muted text-muted-foreground shadow-sm compare-btn"
                 onclick="toggleCompareAgent(this)"
@@ -23,6 +32,8 @@
                 data-agent-slug="{{ ($agent->profile?->slug) ?: ($agent->id ?? 'agent') }}"
                 data-agent-mobile="{{ $agent->mobile }}"
                 data-agent-whatsapp="{{ preg_replace('/[^0-9]/', '', $agent->profile->whatsapp ?? $agent->mobile) }}"
+                data-agent-approved="{{ $isApprovedByAdmin ? '1' : '0' }}"
+                data-agent-trusted="{{ $isTrusted ? '1' : '0' }}"
                 title="Compare Agent">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -57,7 +68,7 @@
     <div class="find-agents-list-item-content">
         <div class="agents-name-location d-flex align-items-center mb-2">
             <h3>{{ $agent->profile->display_name ?? $agent->fullname }}</h3>
-            @if($agent->profile && $agent->profile->license_number)
+            @if($isApprovedByAdmin)
             <span style="margin-left: 10px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -70,6 +81,9 @@
                 </svg>
                 IRDAI
             </span>
+            @endif
+            @if($isTrusted)
+            <span style="margin-left: 10px; background: #eefbf6; color: #0f766e; border: 1px solid #99f6e4; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 600;">Trusted</span>
             @endif
         </div>
         <location class="agent-location mb-2"><i class="fa-solid fa-location-dot"></i>
@@ -97,16 +111,6 @@
                     <rect width="20" height="14" x="2" y="6" rx="2"></rect>
                 </svg>
                 {{ $agent->experience_range ?? 'N/A' }}
-            </span>
-            <span class="rating-block-fast d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    class="lucide lucide-clock h-3 w-3 text-green-600" aria-hidden="true">
-                    <path d="M12 6v6l4 2"></path>
-                    <circle cx="12" cy="12" r="10"></circle>
-                </svg>
-                Fast
             </span>
         </div>
 
@@ -150,23 +154,44 @@
         </div>
 
         <div class="agent-card-segments">
-            @if($agent->insuranceSegments && $agent->insuranceSegments->count() > 0)
-                @foreach($agent->insuranceSegments as $segment)
-                    @php
-                        $type = strtolower(trim($segment->segment_type ?? $segment->name ?? ''));
-                        if(empty($type) || $type === '-') continue;
-                        
-                        $icon = 'fa-shield-alt';
-                        if(strpos($type, 'life') !== false) $icon = 'fa-user-shield';
-                        elseif(strpos($type, 'health') !== false) $icon = 'fa-heartbeat';
-                        elseif(strpos($type, 'motor') !== false) $icon = 'fa-car';
-                        elseif(strpos($type, 'sme') !== false) $icon = 'fa-store';
-                    @endphp
-                    <div class="insurance-pill card-pill">
-                        <i class="fas {{ $icon }}"></i> {{ ucfirst($type) }}
-                    </div>
-                @endforeach
-            @endif
+            @php
+                $segmentValues = $agent->insuranceSegments
+                    ? $agent->insuranceSegments->map(function ($segment) {
+                        return strtolower(trim($segment->segment_type ?? $segment->name ?? ''));
+                    })->filter(function ($value) {
+                        return !empty($value) && $value !== '-';
+                    })->unique()->values()->all()
+                    : [];
+
+                $priorityOrder = ['health', 'life', 'motor', 'sme'];
+                $orderedSegments = [];
+
+                foreach ($priorityOrder as $priority) {
+                    if (in_array($priority, $segmentValues, true)) {
+                        $orderedSegments[] = $priority;
+                    }
+                }
+
+                foreach ($segmentValues as $value) {
+                    if (!in_array($value, $orderedSegments, true)) {
+                        $orderedSegments[] = $value;
+                    }
+                }
+            @endphp
+            @foreach($orderedSegments as $type)
+                @php
+                    $icon = 'fa-shield-alt';
+                    if (strpos($type, 'life') !== false) $icon = 'fa-user-shield';
+                    elseif (strpos($type, 'health') !== false) $icon = 'fa-heartbeat';
+                    elseif (strpos($type, 'motor') !== false) $icon = 'fa-car';
+                    elseif (strpos($type, 'sme') !== false) $icon = 'fa-store';
+
+                    $tagLabel = $type === 'sme' ? 'SME' : ucfirst($type);
+                @endphp
+                <div class="insurance-pill card-pill">
+                    <i class="fas {{ $icon }}"></i> {{ $tagLabel }}
+                </div>
+            @endforeach
         </div>
 
         <div class="bottom-content-card">
@@ -174,7 +199,19 @@
                 {{-- Reserved for future use --}}
             </div>
             <div class="bottom-butons">
+                @php
+                    $serviceType = request('ServiceType');
+                    $insuranceType = is_array(request('InsuranceType'))
+                        ? implode(', ', request('InsuranceType'))
+                        : request('InsuranceType');
+                    $insuranceCompany = request('InsuranceCompany');
+                @endphp
                 <a class="phone-btn" href="tel:{{ $agent->mobile }}"
+                    onclick="return handleAgentContactClick(event, this, 'call')"
+                    data-agent-id="{{ $agent->id }}"
+                    data-service-type="{{ $serviceType }}"
+                    data-insurance-type="{{ $insuranceType }}"
+                    data-insurance-company="{{ $insuranceCompany }}"
                     class="call-btn text-decoration-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -193,7 +230,12 @@
                         $whatsappNumber = '91' . $whatsappNumber;
                     }
                 @endphp
-                <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="chat-btn" rel="noopener noreferrer">
+                <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="chat-btn" rel="noopener noreferrer"
+                    onclick="return handleAgentContactClick(event, this, 'whatsapp')"
+                    data-agent-id="{{ $agent->id }}"
+                    data-service-type="{{ $serviceType }}"
+                    data-insurance-type="{{ $insuranceType }}"
+                    data-insurance-company="{{ $insuranceCompany }}">
                     <svg stroke="currentColor" fill="currentColor" stroke-width="0"
                         viewBox="0 0 448 512"
                         class="h-4 w-4" height="1em" width="1em"

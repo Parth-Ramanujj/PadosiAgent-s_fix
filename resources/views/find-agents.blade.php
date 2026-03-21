@@ -683,6 +683,50 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        window.handleAgentContactClick = function(event, element, interactionType) {
+            if (!element) return true;
+
+            event.preventDefault();
+
+            const href = element.getAttribute('href');
+            const agentId = element.getAttribute('data-agent-id');
+            const serviceType = element.getAttribute('data-service-type') || '';
+            const insuranceType = element.getAttribute('data-insurance-type') || '';
+            const insuranceCompany = element.getAttribute('data-insurance-company') || '';
+
+            const continueAction = () => {
+                if (!href) return;
+                if (interactionType === 'whatsapp') {
+                    window.open(href, '_blank', 'noopener');
+                } else {
+                    window.location.href = href;
+                }
+            };
+
+            if (!agentId) {
+                continueAction();
+                return false;
+            }
+
+            $.ajax({
+                url: "{{ route('agent.leads.capture') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    agent_id: agentId,
+                    interaction_type: interactionType,
+                    service_type: serviceType,
+                    insurance_type: insuranceType,
+                    insurance_company: insuranceCompany,
+                    source_page: 'find-agents'
+                }
+            }).always(function() {
+                continueAction();
+            });
+
+            return false;
+        };
+
         // Mobile filter toggle
         $(document).on("click", ".mobile-filter", function () {
             $(".find-agents-filter-wrapper").addClass("show-filter");
@@ -698,6 +742,13 @@
                 $(".find-agents-filter-wrapper").removeClass("show-filter");
             }
         });
+
+        // For homepage icon flow, open filters by default on mobile to complete sub-product/company selection.
+        const urlParams = new URLSearchParams(window.location.search);
+        const shouldOpenFilter = urlParams.get('openFilter') === '1';
+        if (shouldOpenFilter && window.innerWidth <= 1180) {
+            $(".find-agents-filter-wrapper").addClass("show-filter");
+        }
 
         const insuranceOptions = {
             'New Policy': ['Health Insurance', 'Life Insurance', 'Motor Insurance', 'SME Insurance'],
@@ -1161,6 +1212,8 @@
                 settled: btn.data('agent-settled'),
                 clients: btn.data('agent-clients'),
                 segments: btn.data('agent-segments') || 'N/A',
+                approved: String(btn.data('agent-approved')) === '1',
+                trusted: String(btn.data('agent-trusted')) === '1',
                 location: btn.data('agent-location'),
                 slug: btn.data('agent-slug'),
                 mobile: btn.data('agent-mobile'),
@@ -1273,6 +1326,10 @@
                         <div class="compare-agent-header">
                             <img src="${agent.image}" alt="${agent.name}">
                             <div class="compare-agent-name">${agent.name}</div>
+                            <div class="d-flex align-items-center justify-content-center flex-wrap mt-1" style="gap:6px;">
+                                ${agent.approved ? '<span class="badge badge-light" style="border:1px solid #dbeafe; color:#1d4ed8; font-size:10px;">IRDAI</span>' : ''}
+                                ${agent.trusted ? '<span class="badge badge-light" style="border:1px solid #99f6e4; color:#0f766e; font-size:10px;">Trusted</span>' : ''}
+                            </div>
                         </div>
                     </td>
                 `;
@@ -1284,13 +1341,29 @@
                 clientsRow += `<td class="compare-value">${agent.clients}</td>`;
                 
                 // Format segments neatly
-                let segmentsHtml = agent.segments !== 'N/A' 
-                    ? agent.segments.split(',').map(s => {
-                        let text = s.trim().replace(/ insurance$/i, '');
-                        text = text.charAt(0).toUpperCase() + text.slice(1);
-                        if (text.toLowerCase() === 'sme') text = 'SME';
-                        return `<span class="badge text-white m-1 shadow-sm" style="background-color: #2b7a70; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 12px;">${text}</span>`;
-                    }).join('') 
+                let segmentsHtml = agent.segments !== 'N/A'
+                    ? (() => {
+                        const rawSegments = agent.segments.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+                        const priority = ['health', 'life', 'motor', 'sme'];
+                        const ordered = [];
+
+                        priority.forEach(item => {
+                            if (rawSegments.includes(item)) {
+                                ordered.push(item);
+                            }
+                        });
+
+                        rawSegments.forEach(item => {
+                            if (!ordered.includes(item)) {
+                                ordered.push(item);
+                            }
+                        });
+
+                        return ordered.map(item => {
+                            const label = item === 'sme' ? 'SME' : item.charAt(0).toUpperCase() + item.slice(1);
+                            return `<span class="badge text-white m-1 shadow-sm" style="background-color: #2b7a70; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 12px;">${label}</span>`;
+                        }).join('');
+                    })()
                     : agent.segments;
                 segmentsRow += `<td class="compare-value">${segmentsHtml}</td>`;
                 

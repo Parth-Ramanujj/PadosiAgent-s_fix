@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AdminAgentController extends Controller
 {
@@ -142,29 +143,56 @@ class AdminAgentController extends Controller
     {
         $agentId = $request->id;
         $newPlan = $request->selected_plan;
+        $columns = Schema::getColumnListing('agent_subscriptions');
+
+        $payload = [
+            'agent_id' => $agentId,
+            'selected_plan' => $newPlan,
+            'registration_amount' => 0,
+            'status' => 'active',
+            'payment_status' => 'completed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        // Keep admin-only metadata only when present in this DB schema variant.
+        if (in_array('transaction_id', $columns, true)) {
+            $payload['transaction_id'] = 'ADMIN_MANUAL';
+        }
+        if (in_array('is_active', $columns, true)) {
+            $payload['is_active'] = 1;
+        }
+        if (in_array('amount', $columns, true)) {
+            $payload['amount'] = 0;
+        }
+        if (in_array('price', $columns, true)) {
+            $payload['price'] = 0;
+        }
+        if (in_array('fee', $columns, true)) {
+            $payload['fee'] = 0;
+        }
+        if (in_array('plan_amount', $columns, true)) {
+            $payload['plan_amount'] = 0;
+        }
+
+        // Drop keys that do not exist in current schema to avoid SQL unknown column errors.
+        $payload = array_filter(
+            $payload,
+            fn ($value, $key) => in_array($key, $columns, true),
+            ARRAY_FILTER_USE_BOTH
+        );
 
         $exists = DB::table('agent_subscriptions')->where('agent_id', $agentId)->exists();
 
         if ($exists) {
             DB::table('agent_subscriptions')
                 ->where('agent_id', $agentId)
-                ->update(['selected_plan' => $newPlan, 'updated_at' => now()]);
+                ->update(array_filter([
+                    'selected_plan' => $newPlan,
+                    'updated_at' => in_array('updated_at', $columns, true) ? now() : null,
+                ], fn ($value) => !is_null($value)));
         } else {
-            DB::table('agent_subscriptions')->insert([
-                'agent_id' => $agentId,
-                'selected_plan' => $newPlan,
-                'registration_amount' => 0,
-                'amount' => 0,
-                'price' => 0,
-                'fee' => 0,
-                'plan_amount' => 0,
-                'status' => 'active',
-                'is_active' => 1,
-                'payment_status' => 'completed',
-                'transaction_id' => 'ADMIN_MANUAL',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+            DB::table('agent_subscriptions')->insert($payload);
         }
 
         return redirect()->back()->with('success', 'Subscription plan updated successfully.');

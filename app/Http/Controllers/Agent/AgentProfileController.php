@@ -14,6 +14,7 @@ use App\Models\AgentPortfolio;
 use App\Models\AgentAchievementPhoto;
 use App\Models\AgentLeadPreference;
 use App\Models\AgentCareerTimeline;
+use App\Models\AgentProfileView;
 use App\Models\City;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,7 @@ class AgentProfileController extends Controller
             $query->where('slug', $slug);
         })->with([
             'profile',
+            'activeSubscription',
             'reviews.user',
             'performanceStats',
             'familyLicenses',
@@ -45,6 +47,7 @@ class AgentProfileController extends Controller
         if (!$agent && is_numeric($slug)) {
             $agent = Agent::with([
                 'profile',
+                'activeSubscription',
                 'reviews.user',
                 'performanceStats',
                 'familyLicenses',
@@ -63,6 +66,27 @@ class AgentProfileController extends Controller
         }
 
         $isOwner = auth()->check() && auth()->user()->agent && auth()->user()->agent->id == $agent->id;
+
+        if (!$isOwner) {
+            $sessionKey = 'agent_profile_viewed_' . $agent->id;
+            $lastViewedAt = session($sessionKey);
+            $cooldownSeconds = 30 * 60;
+
+            if (!$lastViewedAt || (time() - (int) $lastViewedAt) > $cooldownSeconds) {
+                $profileView = AgentProfileView::firstOrCreate(
+                    [
+                        'agent_id' => $agent->id,
+                        'view_date' => now()->toDateString(),
+                    ],
+                    [
+                        'view_count' => 0,
+                    ]
+                );
+                $profileView->increment('view_count');
+
+                session([$sessionKey => time()]);
+            }
+        }
 
         return view('agent.profile-view', compact('agent', 'isOwner'));
     }
@@ -104,8 +128,7 @@ class AgentProfileController extends Controller
                 'profile_photo' => 'nullable|image|max:5120', // Max 5MB
             ],
             2 => [
-                'pan' => 'nullable|string|size:10',
-                'license' => 'nullable|string|max:100',
+                'pan' => 'required|string|size:10|regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/',
                 'agency_name' => 'nullable|string|max:255',
                 'office_address' => 'nullable|string',
                 'service_pincode' => 'required|string|size:6',
@@ -215,7 +238,6 @@ class AgentProfileController extends Controller
             if ($shouldProcess(2)) {
                 $profile->fill([
                     'pan_number' => $request->pan,
-                    'license_number' => $request->license,
                     'agency_name' => $request->agency_name,
                     'office_address' => $request->office_address,
                     'service_pincode' => $request->service_pincode,
@@ -422,14 +444,20 @@ class AgentProfileController extends Controller
             'data' => $request->all()
         ]);
 
-        if (!auth()->check()) {
-            return response()->json(['status' => 'error', 'message' => 'Please login to submit a review'], 401);
-        }
-
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'required|string|min:10|max:500',
-        ]);
+        ];
+
+        if (!auth()->check()) {
+            $rules = array_merge($rules, [
+                'fullname' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'mobile' => 'required|string|regex:/^[0-9]{10}$/',
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
@@ -448,21 +476,44 @@ class AgentProfileController extends Controller
         }
 
         // Prevent agent from reviewing themselves
-        if (auth()->user()->agent && auth()->user()->agent->id == $agent->id) {
+        if (auth()->check() && auth()->user()->agent && auth()->user()->agent->id == $agent->id) {
             return response()->json(['status' => 'error', 'message' => 'You cannot review yourself'], 403);
         }
 
-        $review = \App\Models\AgentReview::updateOrCreate(
-            [
-                'agent_id' => $agent->id,
-                'user_id' => auth()->id()
-            ],
-            [
-                'rating' => $request->rating,
-                'review' => $request->review,
-                'is_approved' => true
-            ]
-        );
+        if (auth()->check()) {
+            $review = \App\Models\AgentReview::updateOrCreate(
+                [
+                    'agent_id' => $agent->id,
+                    'user_id' => auth()->id(),
+                ],
+                [
+                    'reviewer_name' => auth()->user()->fullname,
+                    'reviewer_email' => auth()->user()->email,
+                    'reviewer_mobile' => auth()->user()->mobile,
+                    'rating' => $request->rating,
+                    'review' => $request->review,
+                    'is_approved' => true,
+                ]
+            );
+        } else {
+            $mobileDigits = preg_replace('/[^0-9]/', '', (string) $request->mobile);
+
+            $review = \App\Models\AgentReview::updateOrCreate(
+                [
+                    'agent_id' => $agent->id,
+                    'reviewer_email' => strtolower((string) $request->email),
+                ],
+                [
+                    'user_id' => null,
+                    'reviewer_name' => $request->fullname,
+                    'reviewer_email' => strtolower((string) $request->email),
+                    'reviewer_mobile' => $mobileDigits,
+                    'rating' => $request->rating,
+                    'review' => $request->review,
+                    'is_approved' => true,
+                ]
+            );
+        }
 
         $message = $review->wasRecentlyCreated ? 'Review submitted successfully!' : 'Review updated successfully!';
 

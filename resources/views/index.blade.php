@@ -132,7 +132,7 @@
                     <div class="benefit_wrapper position-relative" data-aos="fade-up">
                         <ul class="list-unstyled mb-0">
                             <li class="beneft-box">
-                                <a href="{{ Auth::check() ? url('/find-agents?ServiceType=New%20Policy&InsuranceType=Health%20Insurance') : route('client.login') }}">
+                                <a href="{{ url('/find-agents?ServiceType=New%20Policy&InsuranceType=Health%20Insurance&openFilter=1') }}">
                                     <figure class="icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -153,7 +153,7 @@
                                 </a>
                             </li>
                             <li class="beneft-box">
-                                <a href="{{ Auth::check() ? url('/find-agents?ServiceType=New%20Policy&InsuranceType=Life%20Insurance') : route('client.login') }}">
+                                <a href="{{ url('/find-agents?ServiceType=New%20Policy&InsuranceType=Life%20Insurance&openFilter=1') }}">
                                     <figure class="icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -174,7 +174,7 @@
                                 </a>
                             </li>
                             <li class="beneft-box">
-                                <a href="{{ Auth::check() ? url('/find-agents?ServiceType=New%20Policy&InsuranceType=Motor%20Insurance') : route('client.login') }}">
+                                <a href="{{ url('/find-agents?ServiceType=New%20Policy&InsuranceType=Motor%20Insurance&openFilter=1') }}">
                                     <figure class="icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -198,7 +198,7 @@
                                 </a>
                             </li>
                             <li class="beneft-box">
-                                <a href="{{ Auth::check() ? url('/find-agents?ServiceType=New%20Policy&InsuranceType=SME%20Insurance') : route('client.login') }}">
+                                <a href="{{ url('/find-agents?ServiceType=New%20Policy&InsuranceType=SME%20Insurance&openFilter=1') }}">
                                     <figure class="icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -250,7 +250,7 @@
                         <div class="benefit_wrapper position-relative" data-aos="fade-up">
                             <ul class="list-unstyled mb-0">
                                 <li class="beneft-box">
-                                    <a href="{{ Auth::check() ? url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=Health%20Insurance') : route('client.login') }}">
+                                    <a href="{{ url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=Health%20Insurance&openFilter=1') }}">
                                         <figure class="icon">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -269,7 +269,7 @@
                                     </a>
                                 </li>
                                 <li class="beneft-box">
-                                    <a href="{{ Auth::check() ? url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=Life%20Insurance') : route('client.login') }}">
+                                    <a href="{{ url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=Life%20Insurance&openFilter=1') }}">
                                         <figure class="icon">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -288,7 +288,7 @@
                                     </a>
                                 </li>
                                 <li class="beneft-box">
-                                    <a href="{{ Auth::check() ? url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=Motor%20Insurance') : route('client.login') }}">
+                                    <a href="{{ url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=Motor%20Insurance&openFilter=1') }}">
                                         <figure class="icon">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -311,7 +311,7 @@
                                 </li>
                                 
                                 <li class="beneft-box">
-                                    <a href="{{ Auth::check() ? url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=SME%20Insurance') : route('client.login') }}">
+                                    <a href="{{ url('/find-agents?ServiceType=Claim%20Assistance&InsuranceType=SME%20Insurance&openFilter=1') }}">
                                          <figure class="icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
