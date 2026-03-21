@@ -135,7 +135,7 @@ class AgentProfileController extends Controller
                 'email' => 'required|email|max:255',
                 'languages' => 'required|string',
                 'address' => 'required|string',
-                'profile_photo' => 'nullable|image|max:5120', // Max 5MB
+                'profile_photo' => 'nullable|image',
             ],
             2 => [
                 'pan' => 'required|string|size:10|regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/',
@@ -160,7 +160,7 @@ class AgentProfileController extends Controller
                 'facebook_url' => 'nullable|url',
                 'youtube_url' => 'nullable|url',
                 'achievement_photos' => 'nullable|array',
-                'achievement_photos.*' => 'image|max:5120',
+                'achievement_photos.*' => 'image',
                 'remove_photos' => 'nullable|array',
                 'remove_photos.*' => 'integer',
             ],

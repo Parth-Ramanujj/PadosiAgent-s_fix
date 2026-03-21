@@ -287,6 +287,23 @@
                                         margin-top: 5px !important;
                                     }
                                     
+                                    /* Fix mobile view of achievement photos */
+                                    @media (max-width: 768px) {
+                                        .photos-preview-grid {
+                                            gap: 0.5rem !important;
+                                            justify-content: center !important;
+                                        }
+                                        .photo-preview-item {
+                                            width: 70px !important;
+                                            height: 70px !important;
+                                        }
+                                        .photo-preview-item .remove-photo {
+                                            width: 20px !important;
+                                            height: 20px !important;
+                                            font-size: 10px !important;
+                                        }
+                                    }
+                                    
                                     /* Inline search (inside the selection box) */
                                     .select2-container--default .select2-selection--multiple .select2-search--inline {
                                         float: left !important;
@@ -712,7 +729,7 @@
                                 <div class="d-flex align-items-center">
                                     <h5 class="mb-0 mr-3"><i class="far fa-images mr-2"></i>Achievement Photos</h5>
                                     <span class="badge badge-pill badge-primary-soft text-primary px-3 py-2" id="photo-count-badge" style="background-color: #e0f2fe; border: 1px solid #bae6fd;">0 uploaded</span>
-                                    <i class="fas fa-info-circle text-muted ml-2" data-toggle="tooltip" title="Upload achievement photos, awards, recognitions, etc. (Max 5MB each)" style="font-size: 14px; cursor: help;"></i>
+                                    <i class="fas fa-info-circle text-muted ml-2" data-toggle="tooltip" title="Upload achievement photos, awards, recognitions, etc. (Max 20MB each)" style="font-size: 14px; cursor: help;"></i>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary btn-upload-achievements" id="trigger-achievement-upload">
                                     <i class="fas fa-upload mr-2"></i>Upload
@@ -1147,7 +1164,7 @@ $(document).ready(function() {
     profilePhotoInput.on('change', function(e) {
         const file = e.target.files[0];
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 20 * 1024 * 1024; // 20MB
 
         if (!file) return;
 
@@ -1172,11 +1189,11 @@ $(document).ready(function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'File Too Large',
-                    text: 'The image size should not exceed 5MB.',
+                    text: 'Please select an image smaller than 20MB.',
                     confirmButtonColor: '#0d9488'
                 });
             } else {
-                alert('The image size should not exceed 5MB.');
+                alert('The image size should not exceed 20MB.');
             }
             $(this).val('');
             return;
@@ -2167,9 +2184,9 @@ $(document).ready(function() {
             files.forEach(file => {
                 if (!file.type.startsWith('image/')) return;
                 
-                // Check file size (5MB = 5 * 1024 * 1024 bytes)
-                if (file.size > 5 * 1024 * 1024) {
-                    alert(`File "${file.name}" exceeds 5MB limit and will be skipped.`);
+                // Check file size (20MB = 20 * 1024 * 1024 bytes)
+                if (file.size > 20 * 1024 * 1024) {
+                    alert(`File "${file.name}" exceeds 20MB limit and will be skipped.`);
                     return;
                 }
                 
