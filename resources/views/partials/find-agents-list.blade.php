@@ -24,10 +24,16 @@
 </div>
 @elseif($agents->isEmpty())
 <!-- No Agents found  -->
-<div class="no-agents-found">
-    <h3>No Agents Found</h3>
-    <p>Try adjusting your filters to find more agents in your area.</p>
-    <a href="{{ route('find.agents') }}" class="all-btn no-interceptor text-decoration-none">Clear All Filters</a>
+<div class="no-agents-found p-4" style="background-color: #fff5f5; border-radius: 8px; border: 1px solid #feb2b2; margin-top: 20px; text-align: center;">
+    <h3 style="color: #c53030; font-size: 20px; font-weight: 600; margin-bottom: 15px;">No Agents Found</h3>
+    <p style="font-size: 15px; color: #4a5568; margin-bottom: 15px;">
+        @if(request()->filled('pincode'))
+            We couldn't find any agents serving the pincode <strong>{{ request('pincode') }}</strong> with your selected filters.
+        @else
+            No agents found matching your current filters.
+        @endif
+    </p>
+    <a href="{{ route('find.agents') }}" class="all-btn no-interceptor text-decoration-none" style="display: inline-block; background-color: #273c8e;">Clear All Filters</a>
 </div>
 @else
 <div id="agents-list">

@@ -102,36 +102,67 @@ class HomeController extends Controller
             });
         }
 
-        // Filter by City/State (from profile)
-        if ($request->filled('location')) {
+        // Filter by City/State/Pincode (from profile)
+        if ($request->filled('location') || $request->filled('pincode')) {
             $location = $request->location;
-            $query->whereHas('profile', function($q) use ($location) {
-                $q->where('city', 'like', "%{$location}%")
-                  ->orWhere('state', 'like', "%{$location}%");
+            $pincode = $request->pincode;
+            
+            $query->whereHas('profile', function($q) use ($location, $pincode) {
+                $q->where(function($sq) use ($location, $pincode) {
+                    if ($location) {
+                        $sq->where('city', 'like', "%{$location}%")
+                           ->orWhere('state', 'like', "%{$location}%");
+                    }
+                    if ($pincode) {
+                        // Check if pincode matches in the service_pincodes array
+                        $sq->orWhereJsonContains('service_pincodes', $pincode);
+                    }
+                });
+            });
+
+            // Also check if the location/pincode matches in serviceable cities
+            $query->orWhereHas('serviceableCities', function($q) use ($location) {
+                if ($location) {
+                    $q->where('name', 'like', "%{$location}%");
+                }
             });
         }
 
-        // Filter by Insurance Company
-        if ($request->filled('InsuranceCompany') && $request->ServiceType !== 'New Policy') {
-            $companyName = $request->InsuranceCompany;
+        // Filter by Insurance Company / Sub Product
+        if ($request->filled('InsuranceCompany')) {
+            $val = $request->InsuranceCompany;
             $insuranceType = $request->InsuranceType;
-            
-            $query->whereHas('portfolios', function($q) use ($companyName, $insuranceType, $typeMapping) {
-                // If a specific insurance type (segment) is selected, narrow the company search to that segment
-                if ($insuranceType) {
-                    $types = (array) $insuranceType;
-                    $dbTypes = array_map(function($type) use ($typeMapping) {
-                        return $typeMapping[$type] ?? strtolower(str_replace(' Insurance', '', $type));
-                    }, $types);
-                    
-                    $q->whereIn('segment_type', $dbTypes);
-                }
 
-                $q->where(function($sq) use ($companyName) {
-                    $sq->where('primary_companies->name', $companyName)
-                       ->orWhere('secondary_companies->name', $companyName);
+            if ($request->ServiceType === 'New Policy') {
+                // For New Policy, InsuranceCompany field contains the Sub Product
+                $query->whereHas('productExpertise', function($q) use ($val, $insuranceType, $typeMapping) {
+                    $q->where('product_name', $val);
+                    if ($insuranceType) {
+                        $types = (array) $insuranceType;
+                        $dbTypes = array_map(function($type) use ($typeMapping) {
+                            return $typeMapping[$type] ?? strtolower(str_replace(' Insurance', '', $type));
+                        }, $types);
+                        $q->whereIn('segment_type', $dbTypes);
+                    }
                 });
-            });
+            } else {
+                // For other services, it's the actual Insurance Company
+                $query->whereHas('portfolios', function($q) use ($val, $insuranceType, $typeMapping) {
+                    if ($insuranceType) {
+                        $types = (array) $insuranceType;
+                        $dbTypes = array_map(function($type) use ($typeMapping) {
+                            return $typeMapping[$type] ?? strtolower(str_replace(' Insurance', '', $type));
+                        }, $types);
+                        $q->whereIn('segment_type', $dbTypes);
+                    }
+
+                    $q->where(function($sq) use ($val) {
+                        // Use more robust JSON querying for MySQL
+                        $sq->where('primary_companies->name', $val)
+                           ->orWhere('secondary_companies->name', $val);
+                    });
+                });
+            }
         }
 
         // Generic Search
@@ -149,8 +180,9 @@ class HomeController extends Controller
         $agents = $query->orderBy('created_at', 'desc')->paginate(5);
         $agents->appends($request->all());
 
-        // Return partial for HTMX requests to avoid full page load
-        if ($request->header('HX-Request')) {
+        // Return partial for HTMX requests (like filters) to avoid full page load
+        // But for boosted requests (full page navigation), we should return the full view
+        if ($request->header('HX-Request') && !$request->header('HX-Boosted')) {
             return view('partials.find-agents-list', compact('agents', 'shouldGateGuest'));
         }
 
