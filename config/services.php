@@ -46,7 +46,11 @@ return [
     ],
 
     'mailtrap' => [
-        'token' => env('MAILTRAP_API_TOKEN'),
+        'host' => env('MAILTRAP_HOST', 'send.api.mailtrap.io'),
+        'apiKey' => env('MAILTRAP_API_KEY', env('MAILTRAP_API_TOKEN')),
+        'inboxId' => env('MAILTRAP_INBOX_ID'),
+        // Keep token for backward compatibility with custom AppServiceProvider bridge.
+        'token' => env('MAILTRAP_API_TOKEN', env('MAILTRAP_API_KEY')),
     ],
 
     'razorpay' => [

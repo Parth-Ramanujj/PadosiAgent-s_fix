@@ -16,6 +16,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
 use App\Mail\PaymentSuccessMail;
+use App\Mail\AgentCredentialsMail;
 
 class AgentRegistrationController extends Controller
 {
@@ -1321,9 +1322,21 @@ public function completeRegistration(Request $request)
             $subscription->update(['payment_status' => 'completed', 'status' => 'active']);
             $agent->update(['status' => 'active']);
 
+            // Ensure login account exists even in test/fallback flow.
+            $this->createOrLinkUser($agent);
+
+            // Try to send credentials email with username and password, but do not block successful registration.
+            try {
+                // Email is used as default password for login
+                $defaultPassword = $agent->email;
+                Mail::to($agent->email)->send(new AgentCredentialsMail($agent, $defaultPassword));
+            } catch (\Throwable $mailEx) {
+                Log::warning('Agent credentials mail failed in fallback flow: ' . $mailEx->getMessage());
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Test registration successful!',
+                'message' => 'Registration successful. Your account is active now. If email is delayed, you can login using your email as the temporary password and change it using Forgot Password.',
                 'test_payment' => true,
                 'agent_id' => $agent->id
             ]);
@@ -1581,12 +1594,14 @@ public function completeRegistration(Request $request)
             // Create/Link User record
             $this->createOrLinkUser($agent);
 
-            // Send Success Email
+            // Send Credentials Email
             try {
-                Mail::to($agent->email)->send(new PaymentSuccessMail($agent));
-                Log::info('Payment Success Email sent to: ' . $agent->email);
+                // Email is used as default password for login
+                $defaultPassword = $agent->email;
+                Mail::to($agent->email)->send(new AgentCredentialsMail($agent, $defaultPassword));
+                Log::info('Agent Credentials Email sent to: ' . $agent->email);
             } catch (\Exception $e) {
-                Log::error('Failed to send Payment Success Email: ' . $e->getMessage());
+                Log::error('Failed to send Agent Credentials Email: ' . $e->getMessage());
             }
 
             return response()->json([

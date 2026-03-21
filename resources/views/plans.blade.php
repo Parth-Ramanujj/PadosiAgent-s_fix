@@ -468,7 +468,7 @@
             if (data.success) {
                 // Only treat as 'Test Payment' (skip gateway) if no Razorpay Order ID is returned
                 if (data.test_payment && !data.order_id) {
-                    showPaymentSuccessPopup('🎉 Registration Complete!', `We have received your payment. We will share your login credentials on your email.`);
+                    showPaymentSuccessPopup('🎉 Registration Complete!', data.message || 'Registration completed successfully.');
                 } else {
                     paymentBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Opening Payment...';
                     
