@@ -1503,6 +1503,14 @@ $(document).ready(function() {
                         photoCircle.addClass('has-image').css('border-style', 'solid').css('background-color', 'white');
                     }
 
+                    if (step === 5) {
+                        // Clear the temporary array after successful save to prevent duplicates
+                        selectedAchievementPhotos = [];
+                        if (typeof renderAchievementPhotos === 'function') {
+                            renderAchievementPhotos();
+                        }
+                    }
+
                     resolve(true);
                 },
                 error: function(xhr) {

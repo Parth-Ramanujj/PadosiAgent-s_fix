@@ -33,7 +33,7 @@
             No agents found matching your current filters.
         @endif
     </p>
-    <a href="{{ route('find.agents') }}" class="all-btn no-interceptor text-decoration-none" style="display: inline-block; background-color: #273c8e;">Clear All Filters</a>
+    <a href="{{ route('find.agents') }}" class="all-btn no-interceptor text-decoration-none" hx-boost="false" style="display: inline-block; background-color: #273c8e;">Clear All Filters</a>
 </div>
 @else
 <div id="agents-list">
@@ -46,7 +46,8 @@
         @if($agents->hasMorePages())
         <div class="find-more-agent-btn text-center">
             <a href="{{ $agents->nextPageUrl() }}" 
-               class="all-btn no-interceptor text-decoration-none">
+               class="all-btn no-interceptor text-decoration-none"
+               hx-boost="false">
                Find More Agents
             </a>
         </div>

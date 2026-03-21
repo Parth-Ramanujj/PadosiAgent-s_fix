@@ -41,18 +41,7 @@ class AgentAchievementPhoto extends Model
             }
         }
 
-        if ($normalizedPath !== '' && Storage::disk('public')->exists($normalizedPath)) {
-            return Storage::disk('public')->url($normalizedPath);
-        }
-
-        if ($normalizedPath !== '' && file_exists(public_path($normalizedPath))) {
-            return asset($normalizedPath);
-        }
-
-        if ($normalizedPath !== '' && file_exists(public_path('storage/' . $normalizedPath))) {
-            return asset('storage/' . $normalizedPath);
-        }
-
-        return asset('img/avatar-icon.jpg');
+        // Return the storage URL directly.
+        return Storage::disk('public')->url($normalizedPath);
     }
 }
