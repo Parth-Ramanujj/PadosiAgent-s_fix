@@ -276,9 +276,13 @@ class AgentProfileController extends Controller
                             $profile->profile_photo_path = $uploadResult['secure_url'];
                         } else {
                             Log::error('Cloudinary upload returned no secure_url', ['result' => $uploadResult]);
+                            // Fallback for local/dev when cloud upload response is unusable.
+                            $profile->profile_photo_path = $file->store('agent/profiles', 'public');
                         }
                     } catch (\Throwable $cloudinaryEx) {
                         Log::error('Cloudinary profile photo upload failed: ' . $cloudinaryEx->getMessage());
+                        // Fallback for local/dev SSL and network issues.
+                        $profile->profile_photo_path = $file->store('agent/profiles', 'public');
                     }
                 }
                 
@@ -448,9 +452,13 @@ class AgentProfileController extends Controller
                                 $agent->achievementPhotos()->create(['photo_path' => $uploadResult['secure_url']]);
                             } else {
                                 Log::error('Cloudinary achievement upload returned no secure_url', ['result' => $uploadResult]);
+                                $localPath = $photoFile->store('agent/achievements', 'public');
+                                $agent->achievementPhotos()->create(['photo_path' => $localPath]);
                             }
                         } catch (\Throwable $cloudinaryEx) {
                             Log::error('Cloudinary achievement photo upload failed: ' . $cloudinaryEx->getMessage());
+                            $localPath = $photoFile->store('agent/achievements', 'public');
+                            $agent->achievementPhotos()->create(['photo_path' => $localPath]);
                         }
                     }
                 }

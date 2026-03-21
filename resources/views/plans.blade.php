@@ -456,9 +456,14 @@
                 })
             });
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json().catch(() => ({
+                success: false,
+                message: `HTTP error! status: ${response.status}`
+            }));
 
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            }
 
             if (data.success) {
                 // Only treat as 'Test Payment' (skip gateway) if no Razorpay Order ID is returned

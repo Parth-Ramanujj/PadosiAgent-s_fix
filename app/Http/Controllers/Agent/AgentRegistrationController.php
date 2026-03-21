@@ -1214,11 +1214,23 @@ public function completeRegistration(Request $request)
         $gst = $totalAmount - $planAmount;
 
         // Initialize Razorpay
-        $key = config('services.razorpay.key');
-        $secret = config('services.razorpay.secret');
+        $key = (string) config('services.razorpay.key');
+        $secret = (string) config('services.razorpay.secret');
         $razorpayOrder = null;
+        $isTestKey = str_starts_with($key, 'rzp_test');
+        $isProduction = app()->environment('production');
 
-        if (!empty($key) && !empty($secret) && $key !== 'your_razorpay_key_here') {
+        if (!class_exists('Razorpay\\Api\\Api')) {
+            Log::error('Razorpay SDK missing. Install razorpay/razorpay package.');
+            if ($isProduction) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment gateway is temporarily unavailable. Please try again shortly.',
+                ], 503);
+            }
+        }
+
+        if (!empty($key) && !empty($secret) && $key !== 'your_razorpay_key_here' && class_exists('Razorpay\\Api\\Api')) {
             $razorpay = new \Razorpay\Api\Api($key, $secret);
 
             // Amount in paise
@@ -1243,6 +1255,16 @@ public function completeRegistration(Request $request)
                 Log::error('Razorpay API Failed: ' . $e->getMessage());
                 $razorpayOrder = null;
             }
+        } elseif ($isProduction) {
+            Log::error('Razorpay credentials missing/invalid in production.', [
+                'has_key' => !empty($key),
+                'has_secret' => !empty($secret),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment configuration is incomplete. Please contact support.',
+            ], 503);
         }
 
         // If already paid, avoid duplicate payment order creation on retries.
@@ -1291,7 +1313,7 @@ public function completeRegistration(Request $request)
             ]);
         } else {
             // Error: Don't allow user to proceed if Razorpay failed in production
-            if (substr($key, 0, 8) !== 'rzp_test' && !empty($key)) {
+            if (!$isTestKey && !empty($key)) {
                 return response()->json(['success' => false, 'message' => 'Payment system error. Please try later.'], 500);
             }
 
