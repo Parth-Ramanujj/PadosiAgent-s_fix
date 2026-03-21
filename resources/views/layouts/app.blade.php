@@ -140,7 +140,7 @@
                 $(document).ready(function() {
                     Swal.fire({
                         title: '<h3 style="color: #273c8e; margin-top: 10px;">Welcome Back!</h3>',
-                        html: '<h5 style="color: #64748b; font-size: 16px; margin-top: 10px;">Great to see you again, <br><b style="color: #1a1a1a; font-size: 20px;">{{ $welcomeName }}</b></h5>',
+                        html: '<h5 style="color: #64748b; font-size: 16px; margin-top: 10px;">Great to see you again, <br><b style="color: #1a1a1a; font-size: 20px;">' + {!! json_encode($welcomeName) !!} + '</b></h5>',
                         icon: 'success',
                         iconColor: '#06A441',
                         timer: 3500,

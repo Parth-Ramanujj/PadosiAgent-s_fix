@@ -13,8 +13,8 @@
         <div class="profile-left-col">
             <div class="profile-img-container">
                 <div class="profile-img-wrapper">
-                    @if($profile && $profile->profile_photo_path)
-                        <img src="{{ $profile->profile_photo_url }}" alt="{{ $agentDisplayName }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\"d-flex align-items-center justify-content-center h-100 bg-secondary text-white\" style=\"font-size: 48px;\">{{ $agentInitial }}</div>';">
+                    @if($profile && $profile->profile_photo_url)
+                        <img src="{{ $profile->profile_photo_url }}?v={{ $profile->updated_at?->timestamp ?? time() }}" alt="{{ $agentDisplayName }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\"d-flex align-items-center justify-content-center h-100 bg-secondary text-white\" style=\"font-size: 48px;\">{{ $agentInitial }}</div>';">
                     @else
                         <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white" style="font-size: 48px;">
                             {{ $agentInitial }}
@@ -317,16 +317,14 @@
             </div>
         </div>
 
-        <!-- Media (Achievement Photos) -->
         <div class="section-card">
             <div class="media-header">
                 <h2 class="section-title mb-0"><i class="fas fa-images"></i> Media</h2>
-                <span class="max-indicator">10 max</span>
             </div>
             <div class="media-grid">
                 @forelse($agent->achievementPhotos as $photo)
                     <div class="media-item">
-                           <img src="{{ $photo->photo_url }}" alt="Achievement" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}';">
+                           <img src="{{ $photo->photo_url }}?v={{ $photo->updated_at?->timestamp ?? time() }}" alt="Achievement" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}'; this.style.opacity='0.5';">
                     </div>
                 @empty
                     <div class="col-12 text-center py-4 bg-light rounded text-muted">
@@ -334,6 +332,7 @@
                     </div>
                 @endforelse
             </div>
+        </div>
         </div>
 
         <!-- Reviews -->
