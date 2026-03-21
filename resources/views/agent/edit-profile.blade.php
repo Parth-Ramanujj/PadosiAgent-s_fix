@@ -67,7 +67,7 @@
                             <div class="profile-photo-upload">
                                 <label for="profile-photo" class="photo-circle mb-0 {{ ($agent->profile->profile_photo_path ?? '') ? 'has-image' : '' }}" style="{{ ($agent->profile->profile_photo_path ?? '') ? 'border-style: solid; background-color: white;' : '' }}">
                                     @if($agent->profile->profile_photo_path ?? '')
-                                        <img src="{{ asset('storage/' . $agent->profile->profile_photo_path) }}" alt="Profile Photo">
+                                        <img src="{{ $agent->profile->profile_photo_url }}" alt="Profile Photo">
                                     @else
                                         <i class="fas fa-camera fa-2x"></i>
                                     @endif
@@ -2241,17 +2241,17 @@ $(document).ready(function() {
     // Populate Achievement Photos
     @if($agent->achievementPhotos->count() > 0)
         @foreach($agent->achievementPhotos as $photo)
-            (function(path, id) {
+            (function(url, id) {
                 const previewItem = `
                     <div class="photo-preview-item" data-id="${id}">
-                        <img src="{{ asset('storage') }}/${path}" alt="Achievement Photo">
+                        <img src="${url}" alt="Achievement Photo">
                         <button type="button" class="remove-photo" onclick="removeExistingPhoto(${id}, this)">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 `;
                 photosPreviewGrid.append(previewItem);
-            })({!! json_encode($photo->photo_path) !!}, {{ $photo->id }});
+            })({!! json_encode($photo->photo_url) !!}, {{ $photo->id }});
         @endforeach
         updatePhotoCount();
     @endif

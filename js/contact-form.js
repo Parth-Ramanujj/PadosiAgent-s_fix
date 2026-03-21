@@ -46,15 +46,46 @@ function submitContactForm($form) {
 		data: payload,
 		success: function (res) {
 			var msg = res.message || "Thank you! Your message has been sent successfully.";
+			
+			// Show loading spinner first
 			$result.stop(true, true)
-				.html('<span class="form-success alert alert-success d-block">' + msg + "</span>")
+				.html(`
+					<div class="form-success-loader alert alert-success d-block text-center">
+						<div class="spinner-border text-success mb-3" role="status">
+							<span class="sr-only">Processing...</span>
+						</div>
+						<p class="mb-0">Processing your message...</p>
+					</div>
+				`)
 				.show();
 
 			jQuery("html, body").animate({
 				scrollTop: $result.offset().top - 150
 			}, 500);
 
-			$form[0].reset();
+			// After 1.5 seconds, show checkmark animation
+			setTimeout(function() {
+				$result.stop(true, true)
+					.html(`
+						<div class="form-success alert alert-success d-block text-center">
+							<div class="success-checkmark mb-3">
+								<i class="fas fa-check-circle" style="font-size: 60px; color: #28a745; animation: scaleIn 0.6s ease-in-out;"></i>
+							</div>
+							<h5 class="mb-2" style="color: #28a745; font-weight: 600;">Success!</h5>
+							<p class="mb-0" style="font-size: 16px;">` + msg + `</p>
+						</div>
+					`)
+					.show();
+
+				jQuery("html, body").animate({
+					scrollTop: $result.offset().top - 150
+				}, 300);
+			}, 1500);
+
+			// Reset form after showing success
+			setTimeout(function() {
+				$form[0].reset();
+			}, 2000);
 		},
 		error: function (xhr) {
 			var msg = "Failed to send message. Please try again.";

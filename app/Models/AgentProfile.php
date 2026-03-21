@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class AgentProfile extends Model
 {
@@ -75,6 +76,25 @@ class AgentProfile extends Model
     public function agent()
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        $path = trim((string) ($this->profile_photo_path ?? ''));
+        if ($path === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        $normalizedPath = ltrim($path, '/');
+        if (str_starts_with($normalizedPath, 'storage/')) {
+            $normalizedPath = substr($normalizedPath, strlen('storage/'));
+        }
+
+        return Storage::disk('public')->url($normalizedPath);
     }
 
     // Mutator to handle 'service_pincode' (singular) input from form

@@ -1,7 +1,7 @@
 <div class="find-agents-list-item">
     <div class="pic-block">
         <figure class="find-agents-list-item-pic dark-blue-bg-pic">
-            <img src="{{ $agent->profile && $agent->profile->profile_photo_path ? asset('storage/' . $agent->profile->profile_photo_path) : asset('img/avatar-icon.jpg') }}" 
+            <img src="{{ $agent->profile?->profile_photo_url ?? asset('img/avatar-icon.jpg') }}" 
                  alt="{{ $agent->profile->display_name ?? $agent->fullname }}" 
                  class="img-fluid">
         </figure>
@@ -28,7 +28,7 @@
                 data-agent-clients="{{ $agent->client_base ?? 0 }}"
                 data-agent-segments="{{ implode(', ', $agent->insuranceSegments->pluck('segment_type')->filter()->toArray()) }}"
                 data-agent-location="{{ $agent->profile && $agent->profile->city ? $agent->profile->city : 'N/A' }}"
-                data-agent-image="{{ $agent->profile && $agent->profile->profile_photo_path ? asset('storage/' . $agent->profile->profile_photo_path) : asset('img/avatar-icon.jpg') }}"
+                data-agent-image="{{ $agent->profile?->profile_photo_url ?? asset('img/avatar-icon.jpg') }}"
                 data-agent-slug="{{ ($agent->profile?->slug) ?: ($agent->id ?? 'agent') }}"
                 data-agent-mobile="{{ $agent->mobile }}"
                 data-agent-whatsapp="{{ preg_replace('/[^0-9]/', '', $agent->profile->whatsapp ?? $agent->mobile) }}"

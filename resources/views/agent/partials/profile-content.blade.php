@@ -5,7 +5,7 @@
             <div class="profile-img-container">
                 <div class="profile-img-wrapper">
                     @if($agent->profile && $agent->profile->profile_photo_path)
-                        <img src="{{ asset('storage/' . $agent->profile->profile_photo_path) }}" alt="{{ $agent->fullname }}">
+                        <img src="{{ $agent->profile->profile_photo_url }}" alt="{{ $agent->fullname }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\"d-flex align-items-center justify-content-center h-100 bg-secondary text-white\" style=\"font-size: 48px;\">{{ strtoupper(substr($agent->fullname, 0, 1)) }}</div>';">
                     @else
                         <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white" style="font-size: 48px;">
                             {{ strtoupper(substr($agent->fullname, 0, 1)) }}
@@ -313,7 +313,7 @@
             <div class="media-grid">
                 @forelse($agent->achievementPhotos as $photo)
                     <div class="media-item">
-                        <img src="{{ asset('storage/' . $photo->photo_path) }}" alt="Achievement">
+                        <img src="{{ $photo->photo_url }}" alt="Achievement" loading="lazy">
                     </div>
                 @empty
                     <div class="col-12 text-center py-4 bg-light rounded text-muted">

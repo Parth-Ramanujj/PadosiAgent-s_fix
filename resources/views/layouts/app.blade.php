@@ -22,6 +22,7 @@
     <link href="{{ asset('css/style.css') }}?v={{ time() }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('css/custome.css') }}?v={{ time() }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('css/responsive.css') }}?v={{ time() }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('css/contact-form-success.css') }}?v={{ time() }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('css/owl.carousel.min.css') }}?v={{ time() }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('css/owl.theme.default.min.css') }}?v={{ time() }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('css/magnific-popup.css') }}?v={{ time() }}" rel="stylesheet" type="text/css">
