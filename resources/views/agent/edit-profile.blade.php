@@ -1694,6 +1694,7 @@ $(document).ready(function() {
 
         // Prepare Form Data
         const formData = new FormData($('#edit-profile-form')[0]);
+        formData.append('current_step', 7);
 
         // Add achievement photos
         selectedAchievementPhotos.forEach((file, index) => {
@@ -1737,6 +1738,10 @@ $(document).ready(function() {
                 if (xhr.status === 422) {
                     const errors = xhr.responseJSON.errors;
                     message = 'Please fix the validation errors.';
+                    const firstError = errors ? Object.values(errors)[0] : null;
+                    if (firstError) {
+                        message = Array.isArray(firstError) ? firstError[0] : firstError;
+                    }
                     // Highlight errors on specific steps if possible
                     console.log('Validation Errors:', errors);
                     

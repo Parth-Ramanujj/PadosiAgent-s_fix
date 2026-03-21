@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AgentLead;
 use App\Models\AgentProfileView;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AgentDashboardController extends Controller
 {
@@ -39,10 +40,19 @@ class AgentDashboardController extends Controller
         $activeLeads = $newLeads + $contactedLeads + $followUpLeads;
         $conversionRate = $totalLeads > 0 ? round(($closedLeads / $totalLeads) * 100, 1) : 0;
 
-        $totalPageViews = AgentProfileView::where('agent_id', $agent->id)->sum('view_count');
-        $monthlyVisits = AgentProfileView::where('agent_id', $agent->id)
-            ->where('view_date', '>=', $startOfMonth->toDateString())
-            ->sum('view_count');
+        try {
+            $totalPageViews = AgentProfileView::where('agent_id', $agent->id)->sum('view_count');
+            $monthlyVisits = AgentProfileView::where('agent_id', $agent->id)
+                ->where('view_date', '>=', $startOfMonth->toDateString())
+                ->sum('view_count');
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard profile view stats unavailable', [
+                'agent_id' => $agent->id,
+                'error' => $e->getMessage(),
+            ]);
+            $totalPageViews = 0;
+            $monthlyVisits = 0;
+        }
 
         $recentLeads = AgentLead::where('agent_id', $agent->id)
             ->latest()

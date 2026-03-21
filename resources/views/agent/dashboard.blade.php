@@ -12,7 +12,8 @@
         <div class="dashboard-header-con d-flex justify-content-between align-items-center mb-5 flex-wrap px-2">
             <div class="d-flex align-items-center">
                 @php
-                    $displayName = $agent->profile?->display_name ?? $agent->fullname;
+                    $profile = $agent->profile;
+                    $displayName = $profile?->display_name ?? $agent->fullname;
                     $dashboardStats = $dashboardStats ?? [
                         'conversionRate' => 0,
                         'monthlyTarget' => 0,
@@ -34,7 +35,7 @@
                 </div>
                 <div class="agent-info">
                     @php
-                        $rawPlan = $agent->activeSubscription->selected_plan ?? 'Free Plan';
+                        $rawPlan = $agent->activeSubscription?->selected_plan ?? 'Free Plan';
                         
                         // Handle potential JSON string for plan name
                         $decodedPlan = json_decode($rawPlan, true);
@@ -46,12 +47,12 @@
 
                         // Calculate profile completion
                         $completion = 15; // Base registration
-                        if ($agent->profile) {
-                            if ($agent->profile->address && $agent->profile->languages) $completion += 15;
-                            if ($agent->profile->service_pincode && $agent->serviceableCities->count() > 0) $completion += 15;
+                        if ($profile) {
+                            if ($profile->address && $profile->languages) $completion += 15;
+                            if ($profile->service_pincode && $agent->serviceableCities->count() > 0) $completion += 15;
                             if ($agent->insuranceSegments->count() > 0) $completion += 15;
                             if ($agent->portfolios->count() > 0) $completion += 15;
-                            if ($agent->profile->profile_photo_path) $completion += 10;
+                            if ($profile->profile_photo_path) $completion += 10;
                             if ($agent->leadPreferences) $completion += 15;
                         }
                         
