@@ -159,7 +159,7 @@ class AgentProfileController extends Controller
                 'instagram_url' => 'nullable|url',
                 'facebook_url' => 'nullable|url',
                 'youtube_url' => 'nullable|url',
-                'achievement_photos' => 'nullable|array|max:10',
+                'achievement_photos' => 'nullable|array',
                 'achievement_photos.*' => 'image|max:5120',
                 'remove_photos' => 'nullable|array',
                 'remove_photos.*' => 'integer',
@@ -373,23 +373,6 @@ class AgentProfileController extends Controller
                     ->unique()
                     ->values();
 
-                $existingPhotosCount = $agent->achievementPhotos()->count();
-                $removableCount = $removePhotoIds->isEmpty()
-                    ? 0
-                    : $agent->achievementPhotos()->whereIn('id', $removePhotoIds->all())->count();
-                $newPhotosCount = $request->hasFile('achievement_photos') ? count($request->file('achievement_photos')) : 0;
-                $finalPhotosCount = max(0, $existingPhotosCount - $removableCount) + $newPhotosCount;
-
-                if ($finalPhotosCount > 10) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'You can upload a maximum of 10 achievement photos.',
-                        'errors' => [
-                            'achievement_photos' => ['You can upload a maximum of 10 achievement photos.']
-                        ]
-                    ], 422);
-                }
-
                 $profile->fill([
                     'website_url' => $request->website,
                     'social_links' => [
@@ -465,14 +448,20 @@ class AgentProfileController extends Controller
                 $agent->save();
             }
 
+            $isFinalSubmission = !$currentStep || ((int) $currentStep === 7 && $request->boolean('final_declaration'));
+            if ($isFinalSubmission && $agent->status !== 'pending') {
+                $agent->status = 'pending';
+                $agent->save();
+            }
+
             DB::commit();
 
             $agent->load('profile');
 
             return response()->json([
                 'status' => 'success',
-                'message' => $currentStep ? 'Progress saved' : 'Profile under review - You will receive an email once approved',
-                'redirect' => $currentStep ? null : route('agent.dashboard'),
+                'message' => $isFinalSubmission ? 'Profile under review - You will receive an email once approved' : 'Progress saved',
+                'redirect' => $isFinalSubmission ? route('agent.dashboard') : null,
                 'profile_photo_url' => $agent->profile?->profile_photo_url,
             ]);
 

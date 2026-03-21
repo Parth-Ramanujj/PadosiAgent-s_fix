@@ -1,38 +1,42 @@
 <div class="find-agents-list-item">
+    @php
+        $profile = $agent->profile;
+        $performance = $agent->performanceStats;
+        $displayName = $profile?->display_name ?? $agent->fullname;
+        $rawPlan = $agent->activeSubscription?->selected_plan ?? '';
+        $decodedPlan = is_string($rawPlan) ? json_decode($rawPlan, true) : (is_array($rawPlan) ? $rawPlan : null);
+        $planLabel = (is_array($decodedPlan) && isset($decodedPlan['name'])) ? (string) $decodedPlan['name'] : (is_scalar($rawPlan) ? (string) $rawPlan : '');
+        $isTrusted = stripos($planLabel, 'professional') !== false;
+        $isApprovedByAdmin = strtolower((string) ($agent->status ?? '')) === 'active';
+        $agentSlug = $profile?->slug ?: ($agent->id ?? 'agent');
+        $whatsappRaw = (string) ($profile?->whatsapp ?? $agent->mobile ?? '');
+        $whatsappDigits = preg_replace('/[^0-9]/', '', $whatsappRaw) ?: '';
+    @endphp
     <div class="pic-block">
         <figure class="find-agents-list-item-pic dark-blue-bg-pic">
             <img src="{{ $agent->profile?->profile_photo_url ?? asset('img/avatar-icon.jpg') }}" 
-                 alt="{{ $agent->profile->display_name ?? $agent->fullname }}" 
+                 alt="{{ $displayName }}" 
                  class="img-fluid"
                  onerror="this.onerror=null;this.src='{{ asset('img/avatar-icon.jpg') }}';">
         </figure>
         <div class="like-buttons">
-            @php
-                $rawPlan = $agent->activeSubscription->selected_plan ?? '';
-                $decodedPlan = json_decode($rawPlan, true);
-                $planLabel = (json_last_error() === JSON_ERROR_NONE && is_array($decodedPlan) && isset($decodedPlan['name']))
-                    ? $decodedPlan['name']
-                    : (string) $rawPlan;
-                $isTrusted = stripos($planLabel, 'professional') !== false;
-                $isApprovedByAdmin = strtolower((string) ($agent->status ?? '')) === 'active';
-            @endphp
             <button
                 class="p-1.5 rounded-lg transition-all bg-white hover:bg-muted text-muted-foreground shadow-sm compare-btn"
                 onclick="toggleCompareAgent(this)"
                 data-agent-id="{{ $agent->id }}"
-                data-agent-name="{{ $agent->profile->display_name ?? $agent->fullname }}"
+                data-agent-name="{{ $displayName }}"
                 data-agent-experience="{{ $agent->experience_range ?? 'N/A' }}"
                 data-agent-rating="{{ number_format($agent->average_rating, 1) }}"
                 data-agent-reviews="{{ $agent->review_count }}"
-                data-agent-claims="{{ $agent->performanceStats->claims_processed ?? 0 }}"
-                data-agent-settled="₹{{ $agent->performanceStats->claims_amount ?? 0 }}"
+                data-agent-claims="{{ $performance?->claims_processed ?? 0 }}"
+                data-agent-settled="₹{{ $performance?->claims_amount ?? 0 }}"
                 data-agent-clients="{{ $agent->client_base ?? 0 }}"
                 data-agent-segments="{{ implode(', ', $agent->insuranceSegments->pluck('segment_type')->filter()->toArray()) }}"
-                data-agent-location="{{ $agent->profile && $agent->profile->city ? $agent->profile->city : 'N/A' }}"
+                data-agent-location="{{ $profile?->city ?: 'N/A' }}"
                 data-agent-image="{{ $agent->profile?->profile_photo_url ?? asset('img/avatar-icon.jpg') }}"
-                data-agent-slug="{{ ($agent->profile?->slug) ?: ($agent->id ?? 'agent') }}"
+                data-agent-slug="{{ $agentSlug }}"
                 data-agent-mobile="{{ $agent->mobile }}"
-                data-agent-whatsapp="{{ preg_replace('/[^0-9]/', '', $agent->profile->whatsapp ?? $agent->mobile) }}"
+                data-agent-whatsapp="{{ $whatsappDigits }}"
                 data-agent-approved="{{ $isApprovedByAdmin ? '1' : '0' }}"
                 data-agent-trusted="{{ $isTrusted ? '1' : '0' }}"
                 title="Compare Agent">
@@ -68,7 +72,7 @@
 
     <div class="find-agents-list-item-content">
         <div class="agents-name-location d-flex align-items-center mb-2">
-            <h3>{{ $agent->profile->display_name ?? $agent->fullname }}</h3>
+            <h3>{{ $displayName }}</h3>
             @if($isApprovedByAdmin)
             <span style="margin-left: 10px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -88,7 +92,7 @@
             @endif
         </div>
         <location class="agent-location mb-2"><i class="fa-solid fa-location-dot"></i>
-            {{ $agent->profile && $agent->profile->city ? $agent->profile->city . ', ' . ($agent->profile->state ?? 'India') : 'India' }}</location>
+            {{ $profile?->city ? $profile->city . ', ' . ($profile->state ?? 'India') : 'India' }}</location>
 
         <div class="rating-block mb-2">
             <span class="rating-block-star d-flex align-items-center">
@@ -127,7 +131,7 @@
                     </path>
                     <circle cx="12" cy="8" r="6"></circle>
                 </svg>
-                {{ $agent->performanceStats->claims_processed ?? 0 }} <span>Claims</span>
+                {{ $performance?->claims_processed ?? 0 }} <span>Claims</span>
             </span>
             <span class="claims-block-settled-item d-flex align-items-center" title="Claims Settled Amount">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -138,7 +142,7 @@
                     <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                     <rect width="20" height="14" x="2" y="6" rx="2"></rect>
                 </svg>
-                ₹{{ $agent->performanceStats->claims_amount ?? 0 }} <span>Settled</span>
+                ₹{{ $performance?->claims_amount ?? 0 }} <span>Settled</span>
             </span>
             <span class="claims-block-client-base-item d-flex align-items-center" title="Approx Active Client Base">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -226,7 +230,7 @@
                     </svg>
                     Call</a>
                 @php
-                    $whatsappNumber = preg_replace('/[^0-9]/', '', $agent->profile->whatsapp ?? $agent->mobile);
+                    $whatsappNumber = preg_replace('/[^0-9]/', '', $profile?->whatsapp ?? $agent->mobile);
                     if (strlen($whatsappNumber) == 10) {
                         $whatsappNumber = '91' . $whatsappNumber;
                     }
@@ -247,7 +251,7 @@
                     </svg>
                     Chat</a>
 
-                <a href="{{ route('agent.public-profile', ['slug' => ($agent->profile?->slug) ?: ($agent->id ?? 'agent')]) }}" class="view-profile-btn">View Profile</a>
+                <a href="{{ route('agent.public-profile', ['slug' => $agentSlug]) }}" class="view-profile-btn">View Profile</a>
 
             </div>
         </div>

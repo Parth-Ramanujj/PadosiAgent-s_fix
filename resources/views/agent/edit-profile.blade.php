@@ -711,7 +711,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <div class="d-flex align-items-center">
                                     <h5 class="mb-0 mr-3"><i class="far fa-images mr-2"></i>Achievement Photos</h5>
-                                    <span class="badge badge-pill badge-primary-soft text-primary px-3 py-2" id="photo-count-badge" style="background-color: #e0f2fe; border: 1px solid #bae6fd;">0/10</span>
+                                    <span class="badge badge-pill badge-primary-soft text-primary px-3 py-2" id="photo-count-badge" style="background-color: #e0f2fe; border: 1px solid #bae6fd;">0 uploaded</span>
                                     <i class="fas fa-info-circle text-muted ml-2" data-toggle="tooltip" title="Upload achievement photos, awards, recognitions, etc. (Max 5MB each)" style="font-size: 14px; cursor: help;"></i>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary btn-upload-achievements" id="trigger-achievement-upload">
@@ -1727,7 +1727,7 @@ $(document).ready(function() {
                         text: response.message,
                         confirmButtonColor: '#0d9488'
                     }).then(() => {
-                        window.location.href = response.redirect;
+                        window.location.href = response.redirect || "{{ route('agent.dashboard') }}";
                     });
                 }
             },
@@ -2155,12 +2155,6 @@ $(document).ready(function() {
     if (achievementPhotosInput.length) {
         achievementPhotosInput.on('change', function(e) {
             const files = Array.from(e.target.files);
-            
-            // Check if adding these would exceed 10
-            if (selectedAchievementPhotos.length + files.length > 10) {
-                alert('You can only upload a maximum of 10 achievement photos.');
-                return;
-            }
 
             files.forEach(file => {
                 if (!file.type.startsWith('image/')) return;
@@ -2204,16 +2198,9 @@ $(document).ready(function() {
     function updatePhotoCount() {
         if (photoCountBadge.length) {
             const count = photosPreviewGrid.find('.photo-preview-item').length;
-            photoCountBadge.text(`${count}/10`);
-            
-            // Change badge color if at limit
-            if (count >= 10) {
-                photoCountBadge.removeClass('text-primary').addClass('text-danger');
-                photoCountBadge.css({ 'background-color': '#fee2e2', 'border-color': '#fecaca' });
-            } else {
-                photoCountBadge.removeClass('text-danger').addClass('text-primary');
-                photoCountBadge.css({ 'background-color': '#e0f2fe', 'border-color': '#bae6fd' });
-            }
+            photoCountBadge.text(`${count} uploaded`);
+            photoCountBadge.removeClass('text-danger').addClass('text-primary');
+            photoCountBadge.css({ 'background-color': '#e0f2fe', 'border-color': '#bae6fd' });
         }
     }
     // Safety: ensure loader mask is hidden
