@@ -13,7 +13,8 @@
             <div class="d-flex align-items-center">
                 @php
                     $profile = $agent->profile;
-                    $displayName = $profile?->display_name ?? $agent->fullname;
+                    $displayName = trim((string) ($profile?->display_name ?? $agent->fullname ?? 'Agent'));
+                    $displayInitial = strtoupper(substr($displayName, 0, 1));
                     $dashboardStats = $dashboardStats ?? [
                         'conversionRate' => 0,
                         'monthlyTarget' => 0,
@@ -31,7 +32,7 @@
                     $recentLeads = $recentLeads ?? collect();
                 @endphp
                 <div class="agent-avatar-circle mr-3">
-                    <span class="avatar-letter">{{ strtoupper(substr($displayName, 0, 1)) }}</span>
+                    <span class="avatar-letter">{{ $displayInitial }}</span>
                 </div>
                 <div class="agent-info">
                     @php
@@ -324,10 +325,10 @@
                         <div class="col-lg-6 mb-4 mb-lg-0 border-right-lg">
                             <div class="d-flex align-items-start mb-4">
                                 <div class="agent-avatar-circle mr-3" style="width: 80px; height: 80px; font-size: 32px;">
-                                    <span class="avatar-letter">{{ strtoupper(substr($agent->profile->display_name ?? $agent->fullname, 0, 1)) }}</span>
+                                    <span class="avatar-letter">{{ $displayInitial }}</span>
                                 </div>
                                 <div>
-                                    <h5 class="font-weight-bold mb-1">{{ $agent->profile->display_name ?? $agent->fullname }}</h5>
+                                    <h5 class="font-weight-bold mb-1">{{ $displayName }}</h5>
                                     <p class="text-muted small mb-0">{{ $agent->experience_range ? $agent->experience_range . ' Years Exp.' : 'Experience not set' }}</p>
                                     @php
                                         // Get first city for display or count
@@ -355,8 +356,8 @@
                             <div class="languages-info">
                                 <div class="small font-weight-bold mb-2">Languages</div>
                                 <div>
-                                    @if(!empty($agent->profile->languages))
-                                        @foreach(explode(',', $agent->profile->languages) as $lang)
+                                    @if(!empty($profile?->languages))
+                                        @foreach(explode(',', $profile->languages) as $lang)
                                             <span class="badge badge-primary px-3 py-1 rounded-pill mb-1 mr-1" style="background-color: #1a365d;">{{ trim(ucfirst($lang)) }}</span>
                                         @endforeach
                                     @else
@@ -391,7 +392,7 @@
 
                              <div class="mb-0">
                                 <div class="small font-weight-bold mb-1">Company/Agency</div>
-                                <div class="text-muted small">{{ $agent->profile->agency_name ?? 'Not set' }}</div>
+                                          <div class="text-muted small">{{ $profile?->agency_name ?? 'Not set' }}</div>
                              </div>
                         </div>
                     </div>

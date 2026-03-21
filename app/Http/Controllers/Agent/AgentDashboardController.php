@@ -28,14 +28,28 @@ class AgentDashboardController extends Controller
 
         $startOfMonth = Carbon::now()->startOfMonth();
 
-        $leadBaseQuery = AgentLead::where('agent_id', $agent->id);
-        $totalLeads = (clone $leadBaseQuery)->count();
-        $monthlyLeads = (clone $leadBaseQuery)->where('created_at', '>=', $startOfMonth)->count();
+        try {
+            $leadBaseQuery = AgentLead::where('agent_id', $agent->id);
+            $totalLeads = (clone $leadBaseQuery)->count();
+            $monthlyLeads = (clone $leadBaseQuery)->where('created_at', '>=', $startOfMonth)->count();
 
-        $newLeads = (clone $leadBaseQuery)->where('lead_status', 'new')->count();
-        $contactedLeads = (clone $leadBaseQuery)->where('lead_status', 'contacted')->count();
-        $followUpLeads = (clone $leadBaseQuery)->where('lead_status', 'follow_up')->count();
-        $closedLeads = (clone $leadBaseQuery)->where('lead_status', 'closed')->count();
+            $newLeads = (clone $leadBaseQuery)->where('lead_status', 'new')->count();
+            $contactedLeads = (clone $leadBaseQuery)->where('lead_status', 'contacted')->count();
+            $followUpLeads = (clone $leadBaseQuery)->where('lead_status', 'follow_up')->count();
+            $closedLeads = (clone $leadBaseQuery)->where('lead_status', 'closed')->count();
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard lead stats unavailable', [
+                'agent_id' => $agent->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $totalLeads = 0;
+            $monthlyLeads = 0;
+            $newLeads = 0;
+            $contactedLeads = 0;
+            $followUpLeads = 0;
+            $closedLeads = 0;
+        }
 
         $activeLeads = $newLeads + $contactedLeads + $followUpLeads;
         $conversionRate = $totalLeads > 0 ? round(($closedLeads / $totalLeads) * 100, 1) : 0;
@@ -54,10 +68,18 @@ class AgentDashboardController extends Controller
             $monthlyVisits = 0;
         }
 
-        $recentLeads = AgentLead::where('agent_id', $agent->id)
-            ->latest()
-            ->take(10)
-            ->get();
+        try {
+            $recentLeads = AgentLead::where('agent_id', $agent->id)
+                ->latest()
+                ->take(10)
+                ->get();
+        } catch (\Throwable $e) {
+            Log::warning('Dashboard recent leads unavailable', [
+                'agent_id' => $agent->id,
+                'error' => $e->getMessage(),
+            ]);
+            $recentLeads = collect();
+        }
 
         $dashboardStats = [
             'conversionRate' => $conversionRate,
