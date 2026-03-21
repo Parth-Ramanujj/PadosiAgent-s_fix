@@ -102,7 +102,8 @@
                             @if(($shouldGateGuest ?? false) === true)
                             <div class="no-agents-found p-4" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; margin-top: 20px;">
                                 <h3 style="color: #0f5634; font-size: 20px; font-weight: 600; margin-bottom: 15px;">Complete Your Details to View Agents</h3>
-                                <p style="font-size: 15px; color: #495057; margin-bottom: 0;">Please complete the form popup to see the best matching agents in your area.</p>
+                                <p style="font-size: 15px; color: #495057; margin-bottom: 20px;">Please complete the form popup to see the best matching agents in your area.</p>
+                                <button type="button" class="all-btn" onclick="showQuickRegisterPopup()">Complete Details</button>
                             </div>
                             @else
                             <!-- Title -->
@@ -139,15 +140,8 @@
                                     @if($agents->hasMorePages())
                                     <div class="find-more-agent-btn text-center">
                                         <a href="{{ $agents->nextPageUrl() }}" 
-                                           class="all-btn no-interceptor text-decoration-none position-relative"
-                                           hx-get="{{ $agents->nextPageUrl() }}"
-                                           hx-target="#load-more-wrapper"
-                                           hx-select=".pagination-response"
-                                           hx-swap="outerHTML show:none">
-                                           <span class="htmx-indicator-content">
-                                               <i class="fas fa-spinner fa-spin me-2"></i> Loading...
-                                           </span>
-                                           <span class="default-content">Find More Agents</span>
+                                           class="all-btn no-interceptor text-decoration-none">
+                                           Find More Agents
                                         </a>
                                     </div>
                                     @endif

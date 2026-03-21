@@ -149,13 +149,6 @@ class HomeController extends Controller
         $agents = $query->orderBy('created_at', 'desc')->paginate(5);
         $agents->appends($request->all());
 
-        // Check if this is specifically a pagination request (infinite scroll/load more)
-        if ($request->header('HX-Request') && $request->header('HX-Target') == 'load-more-wrapper') {
-            // We return a wrapper to avoid inheriting the body's hx-select
-            return view('partials.agents-list-chunk', compact('agents'));
-        }
-
-        $shouldGateGuest = false;
         return view('find-agents', compact('agents', 'shouldGateGuest'));
     }
 }

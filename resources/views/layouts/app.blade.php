@@ -404,25 +404,8 @@
         // Find Agent Interceptor for Guests
         $(function() {
             @guest
-            $(document).on('click', 'a[href*="find-agents"], .find-agent-btn', function(e) {
-                // If we are already on the find-agents page, do not intercept
-                if (window.location.pathname.includes('find-agents')) {
-                    return;
-                }
-
-                // If user is logged in (check for auth-only elements in case of HTMX/no-refresh login)
-                if ($('#logout-form').length || $('#userMenu').length) {
-                    return;
-                }
-
-                // Skip if this specific link or button has 'no-interceptor' class
-                if ($(this).hasClass('no-interceptor') || $(this).closest('.no-interceptor').length) {
-                    return;
-                }
-                
-                e.preventDefault();
-                e.stopPropagation();
-
+            // Define the popup function globally
+            window.showQuickRegisterPopup = function() {
                 Swal.fire({
                     title: '<h3 style="color: #0d9488; margin-top: 10px;">Find Best Agents Nearby</h3>',
                     html: `
@@ -539,6 +522,28 @@
                         window.location.href = "{{ url('/') }}";
                     }
                 });
+            };
+
+            $(document).on('click', 'a[href*="find-agents"], .find-agent-btn', function(e) {
+                // If we are already on the find-agents page, do not intercept
+                if (window.location.pathname.includes('find-agents')) {
+                    return;
+                }
+
+                // If user is logged in (check for auth-only elements in case of HTMX/no-refresh login)
+                if ($('#logout-form').length || $('#userMenu').length) {
+                    return;
+                }
+
+                // Skip if this specific link or button has 'no-interceptor' class
+                if ($(this).hasClass('no-interceptor') || $(this).closest('.no-interceptor').length) {
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+
+                showQuickRegisterPopup();
             });
             @endguest
 
