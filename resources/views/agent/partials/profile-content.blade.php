@@ -379,13 +379,16 @@
 
             <div class="reviews-list">
                 @forelse($agent->reviews->where('is_approved', true)->sortByDesc('created_at') as $review)
+                @php
+                    $reviewerName = $review->user?->fullname ?? $review->reviewer_name ?? 'User';
+                @endphp
                 <div class="review-item">
                     <div class="review-top">
                         <div class="reviewer-info">
                             <div class="reviewer-avatar">
-                                {{ strtoupper(substr($review->user->fullname ?? $review->reviewer_name ?? 'User', 0, 1)) }}
+                                {{ strtoupper(substr($reviewerName, 0, 1)) }}
                             </div>
-                            <div class="reviewer-name">{{ $review->user->fullname ?? $review->reviewer_name ?? 'User' }}</div>
+                            <div class="reviewer-name">{{ $reviewerName }}</div>
                         </div>
                         <div class="stars">
                             @for($i = 1; $i <= 5; $i++)
